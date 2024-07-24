@@ -6,7 +6,7 @@ export default async function Home() {
     <main className="flex flex-col items-center justify-between p-24">
       <ul>
         {users?.map((user) => (
-          <li key={user.id}>{user.name}</li>
+          <li key={user.id}>{user.firstName}</li>
         ))}
       </ul>
     </main>

@@ -16,6 +16,8 @@ export default async function SiteHeader() {
   const isLoggedIn = await isAuthenticated();
   const categories = await prisma.category.findMany();
 
+  console.log('[categories]: ', categories);
+
   return (
     <header className={'bg-primary'}>
       <nav className="flex justify-between items-center px-4 py-8">

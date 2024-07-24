@@ -17,7 +17,7 @@ export default function DashboardLayout({
         )}
       >
         <DashboardHeader />
-        <main className="container my-6">{children}</main>
+        <main className="container my-12">{children}</main>
       </body>
     </html>
   );

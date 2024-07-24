@@ -1,5 +1,4 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { redirect } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -10,12 +9,11 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScatterChart } from 'lucide-react';
+import PageHeading from '../../components/PageHeading';
 
 export default async function Dashboard() {
-  const { isAuthenticated, getUser } = getKindeServerSession();
-  const isLoggedIn = await isAuthenticated();
+  const { getUser } = getKindeServerSession();
   const user = await getUser();
-  if (!isLoggedIn) redirect('/api/auth/login');
 
   return (
     <section className="container">
@@ -25,7 +23,7 @@ export default async function Dashboard() {
           {user?.given_name || 'there'}
         </span>
       </h2>
-      <h1 className="text-5xl tracking-tight">Dashboard</h1>
+      <PageHeading>Dashboard</PageHeading>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
         <Card className="flex flex-col">
           <CardHeader>
@@ -33,22 +31,18 @@ export default async function Dashboard() {
             <CardDescription>Posts Published</CardDescription>
           </CardHeader>
           <CardContent className="prose">
-            <p>
-              <h5>
-                <strong>Last Posted</strong>
-              </h5>
-              <span className="text-muted-foreground text-sm">
-                7/01/2024
-              </span>
-            </p>
-            <p>
-              <h5>
-                <strong>0</strong>
-              </h5>
-              <span className="text-muted-foreground text-sm">
-                Post in Draft
-              </span>
-            </p>
+            <h5>
+              <strong>Last Posted</strong>
+            </h5>
+            <h6 className="text-muted-foreground text-sm">
+              7/01/2024
+            </h6>
+            <h5 className="mt-6">
+              <strong>0</strong>
+            </h5>
+            <h6 className="text-muted-foreground text-sm">
+              Post in Draft
+            </h6>
           </CardContent>
           <CardFooter className="flex-col justify-end gap-3 grow items-stretch lg:flex-row lg:items-end lg:justify-between">
             <Button variant={'outline'}>Edit a Post</Button>
@@ -61,16 +55,14 @@ export default async function Dashboard() {
             <CardDescription>People Liked Your Posts</CardDescription>
           </CardHeader>
           <CardContent className="prose">
-            <p>
-              <h5>
-                <strong>2</strong>
-              </h5>
-              <span className="text-muted-foreground text-sm">
-                Disliked
-              </span>
-            </p>
+            <h5>
+              <strong>2</strong>
+            </h5>
+            <h6 className="text-muted-foreground text-sm">
+              Disliked
+            </h6>
             <p className="font-bold">Top 3 Liked Posts</p>
-            <ul>
+            <ul className="list-outside">
               <li>So here is the first item in this list.</li>
               <li>In this example we're keeping the items short.</li>
               <li>
