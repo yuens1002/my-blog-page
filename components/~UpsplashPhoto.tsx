@@ -2,21 +2,23 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import upsplash, { createPhotoSchema } from '@/app/api/upsplash';
-import type { Photo } from '@/app/api/upsplash';
+import upsplash, { createPhotoSchema } from '@/app/api/unsplash';
+import type { UpsplashPhoto } from '@/app/api/unsplash';
 
 type UpsplashPhotoPropType = {
   photoId: string;
 };
 
 type PhotoCompPropType = {
-  photo: Photo;
+  photo: UpsplashPhoto;
 };
 
 export default function UpsplashPhoto({
   photoId,
 }: UpsplashPhotoPropType) {
-  const [data, setPhotosResponse] = useState<Photo | null>(null);
+  const [data, setPhotosResponse] = useState<UpsplashPhoto | null>(
+    null
+  );
 
   useEffect(() => {
     upsplash.photos

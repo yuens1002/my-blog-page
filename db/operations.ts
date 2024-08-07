@@ -19,3 +19,20 @@ export async function getPostsByAuthor(authorEmail: string) {
     }
   }
 }
+
+export async function findPostBy(identifier: string, value: string) {
+  try {
+    const post = await db.post.findFirstOrThrow({
+      where: {
+        [identifier]: value,
+      },
+      include: {
+        stats: true,
+      },
+    });
+    return post;
+  } catch (error) {
+    if (error instanceof Error)
+      return NextResponse.json({ message: error });
+  }
+}

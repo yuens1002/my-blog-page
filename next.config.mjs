@@ -1,3 +1,5 @@
+// @ts-check
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -9,6 +11,12 @@ const nextConfig = {
         hostname: 'dummyimage.com',
       },
     ],
+  },
+  // need fs to work in utils.ts file
+  webpack: (config) => {
+    config.resolve.fallback = { fs: false, os: false };
+
+    return config;
   },
 };
 

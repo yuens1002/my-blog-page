@@ -1,16 +1,23 @@
 import { PrismaClient } from '@prisma/client';
 import type { dummyPost } from '../lib/types';
 import { slugify } from '../lib/utils';
+
 const db = new PrismaClient();
 
 require('dotenv').config({
-  path: ['.env.local', '.env'],
+  path: ['.env'],
 });
 
-async function getDummyPosts() {
+async function getDummyPosts({
+  limit = 10,
+  skip = 0,
+}: {
+  limit?: number;
+  skip?: number;
+}) {
   try {
     const response = await fetch(
-      'https://dummyjson.com/posts?limit=10&skip=70'
+      `https://dummyjson.com/posts?limit=${limit}&skip=${skip}`
     );
     if (!response.ok) {
       throw new Error(
@@ -30,22 +37,6 @@ function getUserHeaders(accessToken: string) {
     Authorization: `Bearer ${accessToken}`,
   };
 }
-
-const inputBody = {
-  profile: {
-    given_name: 'Test9',
-    family_name: 'User9',
-  },
-  organization_code: process.env.KINDE_ORG_CODE,
-  identities: [
-    {
-      type: 'email',
-      details: {
-        email: 'syuen@sbgrp.cc',
-      },
-    },
-  ],
-};
 
 async function getKindeAccessToken() {
   try {
@@ -67,7 +58,7 @@ async function getKindeAccessToken() {
 
     if (!response.ok) {
       throw new Error(
-        `Response status: ${response.status} - ${response.statusText}`
+        `getKindeAccessToken Response status: ${response.status} - ${response.statusText}`
       );
     }
     return response;
@@ -76,7 +67,34 @@ async function getKindeAccessToken() {
   }
 }
 
-async function createKindeUser(accessToken: string) {
+type CreateKindeUserArgs = {
+  accessToken: string;
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+};
+
+async function createKindeUser({
+  accessToken,
+  firstName,
+  lastName,
+  emailAddress,
+}: CreateKindeUserArgs) {
+  const inputBody = {
+    profile: {
+      given_name: firstName,
+      family_name: lastName,
+    },
+    organization_code: process.env.KINDE_ORG_CODE,
+    identities: [
+      {
+        type: 'email',
+        details: {
+          email: emailAddress,
+        },
+      },
+    ],
+  };
   try {
     const response = await fetch(
       `https://${process.env.KINDE_DOMAIN_NAME}.kinde.com/api/v1/user`,
@@ -88,7 +106,7 @@ async function createKindeUser(accessToken: string) {
     );
     if (!response.ok) {
       throw new Error(
-        `Status: ${response.status} - ${response.statusText}`
+        `createKindeUser status: ${response.status} - ${response.statusText}`
       );
     }
     return response;
@@ -97,10 +115,24 @@ async function createKindeUser(accessToken: string) {
   }
 }
 
-async function seed() {
+type SeedArgs = {
+  skip: number;
+  emailAddress: string;
+  firstName: string;
+  lastName: string;
+  limit?: number;
+};
+
+async function seed({
+  skip,
+  emailAddress,
+  firstName,
+  lastName,
+  limit,
+}: SeedArgs) {
   try {
     const { posts }: { posts: dummyPost[] } = await (
-      await getDummyPosts()
+      await getDummyPosts({ limit, skip })
     )?.json();
     const postsWithCategories = [
       ...posts.map((post) => {
@@ -108,57 +140,68 @@ async function seed() {
         return post;
       }),
     ];
-    // const tokenRes = await getKindeAccessToken();
-    // if (tokenRes?.ok) {
-    //   const { access_token: accessToken } = await tokenRes.json();
-    //   console.log('[access token]: ', accessToken);
-    //   const userRes = await createKindeUser(accessToken);
-    //   if (userRes?.ok) {
-    //     const user = await userRes.json();
-    //     console.log('[user]: ', user);
-
-    //   }
-    await db.user.create({
-      data: {
-        kindeId: 'kp_e7ac455b3cbe450aac80ce147f02de6f',
-        firstName: inputBody.profile.given_name,
-        lastName: inputBody.profile.family_name,
-        email: inputBody.identities[0].details.email,
-        posts: {
-          create: [
-            ...postsWithCategories.map((post) => ({
-              title: post.title,
-              content: post.body,
-              stats: {
-                create: {
-                  likes: Number(post.reactions.likes),
-                  dislikes: Number(post.reactions.dislikes),
-                  views: Number(post.views),
-                },
-              },
-              categories: {
-                connectOrCreate: [
-                  ...post.categories.map((category) => ({
-                    where: {
-                      name: category,
-                    },
+    const tokenRes = await getKindeAccessToken();
+    if (tokenRes?.ok) {
+      const { access_token: accessToken } = await tokenRes.json();
+      const userRes = await createKindeUser({
+        accessToken,
+        firstName,
+        lastName,
+        emailAddress,
+      });
+      if (userRes?.ok) {
+        const user = await userRes.json();
+        // console.log('[user]: ', JSON.stringify(user, null, 2));
+        return await db.user.create({
+          data: {
+            kindeId: user.id,
+            firstName,
+            lastName,
+            email: emailAddress,
+            posts: {
+              create: [
+                ...postsWithCategories.map((post) => ({
+                  title: post.title,
+                  content: post.body,
+                  stats: {
                     create: {
-                      name: category,
-                      slug: slugify(category),
+                      likes: Number(post.reactions.likes),
+                      dislikes: Number(post.reactions.dislikes),
+                      views: Number(post.views),
                     },
-                  })),
-                ],
-              },
-              slug: slugify(post.title),
-              tags: post.tags,
-            })),
-          ],
-        },
-      },
-    });
+                  },
+                  categories: {
+                    connectOrCreate: [
+                      ...post.categories.map((category) => ({
+                        where: {
+                          name: category,
+                        },
+                        create: {
+                          name: category,
+                          slug: slugify(category),
+                        },
+                      })),
+                    ],
+                  },
+                  slug: slugify(post.title),
+                  tags: post.tags,
+                })),
+              ],
+            },
+          },
+        });
+      }
+    }
   } catch (err) {
     console.error(err);
   }
 }
 
-seed();
+seed({
+  skip: 40,
+  emailAddress: 'user123456776@gmail.com',
+  firstName: 'happy',
+  lastName: 'user',
+}).then((res) => {
+  console.log(res);
+});

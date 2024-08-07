@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import PageHeading from '../../../components/PageHeading';
 import Link from 'next/link';
-import db from '@/db/prismaDb';
 
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import PostsTable from './_components/PostsTable';
@@ -13,7 +12,7 @@ export default async function DashboardPostsPage() {
   const posts = await getPostsByAuthor(user?.email || '');
 
   return (
-    <>
+    <div className="px-4 md:px-8 lg:px-0">
       <header className="flex justify-between items-center gap-4 mb-12">
         <PageHeading>Posts</PageHeading>
         <Button asChild>
@@ -25,6 +24,6 @@ export default async function DashboardPostsPage() {
       ) : (
         <p>{`Let's write a post and check back`}</p>
       )}
-    </>
+    </div>
   );
 }

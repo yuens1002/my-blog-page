@@ -16,7 +16,8 @@ function parsePixels(
   width: number,
   height: number
 ) {
-  const pixelsString = [...pixels]
+  const pixelsArray = Array.from(pixels);
+  const pixelsString = pixelsArray
     .map((byte) => String.fromCharCode(byte))
     .join('');
   const pngString = generatePng(width, height, pixelsString);

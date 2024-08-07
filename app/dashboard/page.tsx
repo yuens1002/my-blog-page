@@ -9,14 +9,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScatterChart } from 'lucide-react';
-import PageHeading from '../../components/PageHeading';
+import PageHeading from '@/components/PageHeading';
 
 export default async function Dashboard() {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
   return (
-    <section className="container">
+    <>
       <h2 className="text-muted-foreground indent-1">
         Hello,{' '}
         <span className="capitalize">
@@ -64,9 +64,9 @@ export default async function Dashboard() {
             <p className="font-bold">Top 3 Liked Posts</p>
             <ul className="list-outside">
               <li>So here is the first item in this list.</li>
-              <li>In this example we're keeping the items short.</li>
+              <li>{`In this example we're keeping the items short.`}</li>
               <li>
-                Later, we'll use longer, more complex list items.
+                {`Later, we'll use longer, more complex list items.`}
               </li>
             </ul>
           </CardContent>
@@ -99,6 +99,6 @@ export default async function Dashboard() {
           </CardFooter>
         </Card>
       </div>
-    </section>
+    </>
   );
 }

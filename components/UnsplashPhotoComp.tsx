@@ -1,22 +1,26 @@
-import { getUpsplashPhoto } from '@/app/api/upsplash';
+'use server';
+
+import { getUnsplashPhotoWithCache } from '@/app/api/unsplash';
 import { blurHashToDataURL } from '@/lib/blurHashBase64';
 import Image from 'next/image';
 import { NextResponse } from 'next/server';
 
-type UpsplashPhotoCompPropType = {
+type UnsplashPhotoCompProps = {
   photoId: string;
 };
 
-export default async function UpsplashPhotoComp({
+export default async function UnsplashPhotoComp({
   photoId,
-}: UpsplashPhotoCompPropType) {
-  const result = await getUpsplashPhoto(photoId);
+}: UnsplashPhotoCompProps) {
+  // refactor this to confirm Response (!ok) type construction
+  const result = await getUnsplashPhotoWithCache(photoId);
   if (result instanceof NextResponse) {
     const error: { status: string; message: string } =
       await result.json();
     return (
-      <div className="w-full my-4 overflow-hidden">
+      <div className="relative aspect-video my-4">
         <Image
+          fill
           priority
           src={`https://dummyimage.com/16:9x1080/efefef/999999&text=${error.message
             .split(' ')
@@ -30,7 +34,7 @@ export default async function UpsplashPhotoComp({
   const { user, urls, blur_hash, width, height } = result;
   return (
     <>
-      <div className="w-full aspect-video relative my-4 overflow-hidden">
+      <div className="w-full aspect-video my-4 overflow-hidden">
         <Image
           priority
           style={{ objectFit: 'cover' }}
