@@ -1,24 +1,33 @@
-import { cn } from '@/lib/utils';
+const sizes = {
+  sm: 'w-4 h-4',
+  md: 'w-8 h-8',
+  lg: 'w-12 h-12',
+  xl: 'w-24 h-24',
+  xxl: 'w-48 h-48',
+};
+
+const translateValues = {
+  sm: '-translate-x-2 -translate-y-2',
+  md: '-translate-x-4 -translate-y-4',
+  lg: '-translate-x-6 -translate-y-6',
+  xl: '-translate-x-12 -translate-y-12',
+  xxl: '-translate-x-24 -translate-y-24',
+};
 
 type LoaderProps = {
   color?: string;
-  size?: [number, number];
+  size?: keyof typeof sizes;
 };
 
 export default function Loader({
-  color = 'black',
-  size = [8, 8],
+  color = 'fill-black',
+  size = 'md',
 }: LoaderProps) {
   return (
-    <div role="status" className="w-full h-full relative">
+    <div role="status" className={`${translateValues[size]}`}>
       <svg
         aria-hidden="true"
-        className={cn(
-          'absolute top-1/2 left-1/2 translate-y-1/2 text-gray-200 animate-spin dark:text-gray-600',
-          `fill-${color}`,
-          `w-${size[0]}`,
-          `h-${size[1]}`
-        )}
+        className={`absolute top-1/2 left-1/2 translate-y-1/2 text-gray-200 animate-spin dark:text-gray-600 ${color} ${sizes[size]}`}
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

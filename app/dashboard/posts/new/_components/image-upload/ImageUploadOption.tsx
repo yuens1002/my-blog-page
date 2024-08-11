@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
 import { type ChangeEvent, useState, useRef } from 'react';
+import ImageWindow from './ImageWindow';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -29,26 +30,26 @@ export default function FileUpload() {
 
   return (
     <div>
-      <Label htmlFor="image" className="sr-only">
+      <Label htmlFor="imageFile" className="sr-only">
         Image Upload
       </Label>
-      <div className="flex w-full items-center gap-0 pt-2">
+      <div className="flex w-full items-center gap-0 rounded-tl-none">
         <Input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={onImageChange}
           className={cn(
-            'pt-3 cursor-pointer rounded-b-none',
+            'pt-3 cursor-pointer rounded-b-none rounded-tl-none',
             image && 'rounded-r-none'
           )}
-          id="image"
+          id="imageFile"
           name="imageFile"
           required
         />
         {image && (
           <Button
-            className="p-6 rounded-l-none"
+            className="p-6 rounded-b-none rounded-l-none"
             onClick={() => {
               setImage(null);
               if (fileInputRef.current) {
@@ -60,24 +61,17 @@ export default function FileUpload() {
           </Button>
         )}
       </div>
-      <div className="h-40">
+      <ImageWindow showBorder={!image}>
         {image ? (
           <img
             alt="preview image"
             src={image}
-            className="object-cover my-4 h-full"
+            className="object-cover w-full"
           />
         ) : (
-          <div
-            className="flex items-center
-            justify-center w-full h-full bg-slate-50 
-            border-dashed border-2 border-slate-200 
-            rounded-sm rounded-t-none border-t-0 text-slate-200"
-          >
-            <ImageIcon size="2rem" />
-          </div>
+          <ImageIcon size="2rem" aria-hidden />
         )}
-      </div>
+      </ImageWindow>
     </div>
   );
 }

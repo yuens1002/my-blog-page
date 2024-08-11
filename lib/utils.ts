@@ -17,6 +17,24 @@ export function slugify(str: string): string {
   return str;
 }
 
+export function namify(str: string): string {
+  str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing/in-between extra white spaces
+  str = str
+    .replace(/[^a-zA-Z0-9-]/g, '') // remove any non-alphanumeric characters except hyphens
+    .replace(/-+/g, '-') // remove consecutive hyphens
+    .replace(/(\b[a-z](?!\s))/g, (firstChar: string) =>
+      firstChar.toUpperCase()
+    ); // capitalizes after space/hyphens
+  return str;
+}
+
+export function namifySentence(str: string) {
+  return str
+    .split(' ')
+    .map((str) => namify(str))
+    .join(' ');
+}
+
 export function setEnvValue(key: string, value: string) {
   // read file from hdd & split if from a line-break to a array
   const ENV_VARS = fs.readFileSync('./.env', 'utf8').split(os.EOL);

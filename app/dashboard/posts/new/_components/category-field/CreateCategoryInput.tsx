@@ -8,18 +8,19 @@ import { useFetch } from '@/hooks/useFetch';
 type CreateCategoryInput = {
   setCreatedCategories: Dispatch<SetStateAction<string[]>>;
   createdCategories: string[];
+  useCreateCategoryInput: [string, Dispatch<SetStateAction<string>>];
 };
 
 export default function CreateCategoryInput({
   setCreatedCategories,
   createdCategories,
+  useCreateCategoryInput: [inputValue, setInputValue],
 }: CreateCategoryInput) {
   const errorMessages = {
     duplicate:
       'Category already created/selected, enter a different name',
     empty: 'Enter a category name',
   };
-  const ref = useRef<HTMLInputElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(
     null
   );
@@ -33,33 +34,34 @@ export default function CreateCategoryInput({
 
   const handleInput = useCallback(() => {
     if (!categories) return;
-    console.log('[errorMessage]', errorMessage);
     const categoryNameArr = categories.map(
       (category) => category.name
     );
-    if (ref.current) {
-      if (!ref.current.value) {
-        setErrorMessage(errorMessages.empty);
-        return;
-      }
-      const inputValue = ref.current.value.trim();
-      const isDuplicated =
-        [...createdCategories, ...categoryNameArr].findIndex(
-          (categoryName) => {
-            return (
-              categoryName.toLowerCase() === inputValue.toLowerCase()
-            );
-          }
-        ) !== -1;
-      // if a category name already exists in category & ones already created
-      if (isDuplicated) {
-        setErrorMessage(errorMessages.duplicate);
-        return;
-      }
-      setCreatedCategories((cur) => [...cur, inputValue]);
-      ref.current.value = '';
+    if (!inputValue) {
+      setErrorMessage(errorMessages.empty);
+      return;
     }
-  }, [createdCategories]);
+    const sanitizedInputValue = inputValue
+      .trim()
+      .split(' ')
+      .join(' ');
+    // if a category name exists in (category | ones created)
+    const isDuplicated =
+      [...createdCategories, ...categoryNameArr].findIndex(
+        (categoryName) => {
+          return (
+            categoryName.toLowerCase() ===
+            sanitizedInputValue.toLowerCase()
+          );
+        }
+      ) !== -1;
+    if (isDuplicated) {
+      setErrorMessage(errorMessages.duplicate);
+      return;
+    }
+    setCreatedCategories((cur) => [...cur, sanitizedInputValue]);
+    setInputValue('');
+  }, [inputValue, createdCategories, categories]);
 
   return (
     <div className="relative flex w-full items-center gap-0">
@@ -67,18 +69,17 @@ export default function CreateCategoryInput({
         create a post category
       </Label>
       <InputField
-        ref={ref}
         placement="bottom"
         name="create-category"
         handleInput={handleInput}
         buttonLabel="Create"
+        useValue={[inputValue, setInputValue]}
         placeholder={
           isPending
             ? 'Loading categories...'
             : 'Enter a category name'
         }
-        errorMessage={errorMessage}
-        setErrorMessage={setErrorMessage}
+        useErrorMessage={[errorMessage, setErrorMessage]}
         isDisabled={isPending}
       />
     </div>

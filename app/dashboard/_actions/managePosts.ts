@@ -1,17 +1,17 @@
 'use server';
 
 import db from '@/db/prismaDb';
-import { string, undefined, z } from 'zod';
+import { record, z } from 'zod';
 import fs from 'fs/promises';
 import fullFs from 'fs';
 import path from 'path';
 
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { NextResponse } from 'next/server';
+import { slugify } from '@/lib/utils';
 
 // const fileSchema = z.instanceof(File, { message: 'required' });
 
-const MAX_FILE_SIZE = 500000;
+const MAX_FILE_SIZE = 1000000;
 const ACCEPTED_IMAGE_TYPES = [
   'image/jpeg',
   'image/jpg',
@@ -27,32 +27,70 @@ const imageSchema = z
     'only .jpg, .jpeg, .png and .webp files are accepted.'
   )
   .refine(
-    (file) => file.size <= MAX_FILE_SIZE,
+    (file) => file.size <= MAX_FILE_SIZE && file.size > 0,
     `Max file size is 5MB.`
-  );
+  )
+  .optional();
 
 const { getUser } = getKindeServerSession();
 
-const createPostSchema = z.object({
-  title: z.string().min(1),
-  content: z.string().min(1).max(10000),
-  publishedAt: z.date().optional(),
-  isPublished: z.boolean().optional(),
-  // doing the size check here because in edit, an image is optional
-  imageFile: imageSchema.refine((file) => file.size > 0, 'required'),
-  categories: z.array(z.string()).nonempty(),
-});
+// const imageRequiredSchema = imageSchema.refine(
+//   (file) => file.size > 0,
+//   'required'
+// );
 
-export async function CreatePost(formData: FormData) {
-  const result = createPostSchema.safeParse(
-    Object.fromEntries(formData.entries())
+const createPostSchema = z
+  .object({
+    title: z.string().min(1).max(20),
+    content: z.string().min(1).max(10000),
+    publishedAt: z.date().optional(),
+    isPublished: z.boolean().optional(),
+    // doing the size check here because in edit, an image is optional
+    imageFile: imageSchema,
+    categories: z.array(z.string()).nonempty(),
+    tags: z.array(z.string()).optional(),
+    unsplashPhotoId: z.string().optional(),
+  })
+  .refine(
+    (data) => data.imageFile || data.unsplashPhotoId,
+    'Either upload an image or provide an unsplash photo id.'
   );
+
+export type CreatePostData = z.infer<typeof createPostSchema>;
+
+export async function createPost(prevState: any, formData: FormData) {
+  //prettier-ignore
+  const formDataObject: Record<string, string | File | (File | string)[]> = {};
+
+  for (const formDataEntry of formData) {
+    const [key, value] = formDataEntry;
+    if (Object.keys(formDataObject).includes(key)) {
+      if (Array.isArray(formDataObject[key])) {
+        formDataObject[key].push(value);
+      }
+    } else {
+      // categories and tags are processed using prismaQL as an array
+      key === 'categories' || key === 'tags'
+        ? (formDataObject[key] = [value])
+        : (formDataObject[key] = value);
+    }
+  }
+  const result = createPostSchema.safeParse(formDataObject);
+
   if (!result.success) {
-    return result.error.formErrors.fieldErrors;
+    console.error(result.error.formErrors.fieldErrors);
+    return { message: 'invalid form data' };
   }
 
-  const { data } = result;
-
+  const {
+    imageFile,
+    title,
+    content,
+    categories,
+    unsplashPhotoId,
+    isPublished,
+    tags,
+  } = result.data as CreatePostData;
   const __projectRoot = process.cwd();
 
   function setImageFileName(fileName: string): string {
@@ -60,21 +98,25 @@ export async function CreatePost(formData: FormData) {
     return `${crypto.randomUUID()}-${fileName.slice(0, 8)}${ext}`;
   }
 
-  function setNextImagePath(fileName: string) {
+  function setNextImagePath(fileName: string): string {
     const name = setImageFileName(fileName);
     return `/uploadedImage/${name}`;
   }
 
-  if (!fullFs.existsSync(`${__projectRoot}/public/uploadedImages/`)) {
-    fs.mkdir(`${__projectRoot}/public/uploadedImages`);
+  if (imageFile) {
+    if (
+      !fullFs.existsSync(`${__projectRoot}/public/uploadedImages/`)
+    ) {
+      fs.mkdir(`${__projectRoot}/public/uploadedImages`);
+    }
+    const fsImagePath = `${__projectRoot}/public/uploadedImages/${setImageFileName(
+      imageFile.name
+    )}`;
+    await fs.writeFile(
+      fsImagePath,
+      Buffer.from(await imageFile.arrayBuffer())
+    );
   }
-  const fsImagePath = `${__projectRoot}/public/uploadedImages/${setImageFileName(
-    data.imageFile.name
-  )}`;
-  await fs.writeFile(
-    fsImagePath,
-    Buffer.from(await data.imageFile.arrayBuffer())
-  );
 
   const user = await getUser();
   if (user?.email) {
@@ -85,33 +127,39 @@ export async function CreatePost(formData: FormData) {
       try {
         await db.post.create({
           data: {
-            title: data.title,
-            content: data.content,
-            imageURL: setNextImagePath(data.imageFile.name),
+            title,
+            content,
+            ...(imageFile && {
+              imageURL: setNextImagePath(imageFile.name),
+            }),
             authorId: dbUser.id,
-            slug: data.title.split(' ').join('-'),
-            isPublished: data.isPublished ?? data.isPublished,
-            categories: {
-              connectOrCreate: [
-                ...data.categories.map((category) => ({
-                  where: {
-                    name: category,
-                  },
-                  create: {
-                    name: category,
-                    slug: category.split(' ').join('-'),
-                  },
-                })),
-              ],
-            },
+            slug: slugify(title),
+            ...(tags && { tags }),
+            ...(isPublished && { isPublished: true }),
+            ...(unsplashPhotoId && { unsplashPhotoId }),
+            ...(categories && {
+              categories: {
+                connectOrCreate: [
+                  ...categories.map((category) => ({
+                    where: {
+                      name: category,
+                    },
+                    create: {
+                      name: category,
+                      slug: slugify(category),
+                    },
+                  })),
+                ],
+              },
+            }),
           },
         });
+        return { message: 'post created' };
       } catch (error) {
         if (error instanceof Error) {
-          return NextResponse.json({
-            status: 500,
-            statusText: error.message,
-          });
+          return {
+            message: 'something went wrong while creating post',
+          };
         }
       }
     }

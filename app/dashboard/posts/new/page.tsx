@@ -1,5 +1,5 @@
 import PageHeading from '@/components/PageHeading';
-import NewPostForm from '@/app/dashboard/posts/_components/newPost/NewPostForm';
+import NewPostForm from '@/app/dashboard/posts/new/_components/NewPostForm';
 
 export default function CreateNewPostPage() {
   return (

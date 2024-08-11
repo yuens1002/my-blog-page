@@ -31,20 +31,21 @@ model User {
 }
 
 model Post {
-  id          String     @id @default(uuid())
-  title       String     @unique
-  content     String?
-  imageURL    String?
-  author      User       @relation(fields: [authorId], references: [id])
-  authorId    String
-  isPublished Boolean    @default(false)
-  stats       Stats?
-  categories  Category[]
-  slug        String     @unique
-  tags        String[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  status      Status     @default(DRAFT)
+  id              String     @id @default(uuid())
+  title           String     @unique
+  content         String?
+  imageURL        String?
+  unsplashPhotoId String?
+  author          User       @relation(fields: [authorId], references: [id])
+  authorId        String
+  isPublished     Boolean    @default(false)
+  stats           Stats?
+  categories      Category[]
+  slug            String     @unique
+  tags            String[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  status          Status     @default(DRAFT)
 }
 
 model Stats {

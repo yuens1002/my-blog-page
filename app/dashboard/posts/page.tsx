@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import PageHeading from '../../../components/PageHeading';
+import PageHeading from '@/components/PageHeading';
 import Link from 'next/link';
 
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';

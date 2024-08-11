@@ -1,5 +1,8 @@
 {
   "cSpell.words": [
     "nextjs"
-  ]
+  ],
+  "eslint.options": {
+    "configFile": ".eslintrc.json"
+  },
 }

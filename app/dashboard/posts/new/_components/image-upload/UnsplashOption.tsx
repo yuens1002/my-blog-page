@@ -2,58 +2,69 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, MessageSquareWarningIcon } from 'lucide-react';
-import { useState, useRef, useEffect, Suspense } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import type { UnsplashPhoto } from '@/lib/types';
 import Loader from '@/components/Loader';
 import { cn } from '@/lib/utils';
-import PhotoPreview from './_components/PhotoPreview';
+import PhotoPreview from './PhotoPreview';
+import ImageWindow from './ImageWindow';
 
-/* eslint-disable @next/next/no-img-element */
+type UnsplashOptionProps = {
+  useIsPhotoIdValidated: [boolean, Dispatch<SetStateAction<boolean>>];
+};
 
-export default function UnsplashOption() {
+export default function UnsplashOption({
+  useIsPhotoIdValidated: [_, setIsPhotoIdValidated],
+}: UnsplashOptionProps) {
   const [photoId, setPhotoId] = useState<string>('');
   const [photoProps, setPhotoProps] = useState<UnsplashPhoto | null>(
     null
   );
   const [isLoading, setIsloading] = useState(false);
   const linkInputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('useEffect called');
     if (!photoId || photoProps) return;
 
     const sanitizeId = (id: string) => {
-      let str = id.trim();
-      return str.split(' ').join('');
+      return id.trim().split(' ').join('');
     };
 
     const isPhotoIdValid = (id: string) => {
       const charCount = 11;
-      return charCount === id.length;
+      return charCount === sanitizeId(id).length;
     };
 
-    if (isPhotoIdValid(sanitizeId(photoId))) {
+    if (isPhotoIdValid(photoId)) {
+      const sanitizedId = sanitizeId(photoId);
       setIsloading(true);
-      setError('');
+      setError(null);
       fetch(
-        `${process.env.NEXT_PUBLIC_API_ROOT}/unsplash/photo?photoid=${photoId}`
+        `${process.env.NEXT_PUBLIC_API_ROOT}/unsplash/photo?photoid=${sanitizedId}`
       )
         .then((res) => {
-          console.log('🚀 ~ first.then ~ res:', res);
           if (!res.ok) {
             throw new Error('No photo found');
           } else {
             return res.json();
           }
         })
-        .then((res) => {
-          console.log('🚀 ~ .then ~ res:', res);
-          const { data } = res;
+        .then(({ data }) => {
           const { urls, ...otherRes } = data;
           const newUrls = { ...urls };
           setPhotoProps({ ...otherRes, urls: newUrls });
           setIsloading(false);
+          setIsPhotoIdValidated(true);
+          if (linkInputRef.current) {
+            linkInputRef.current.value = sanitizedId;
+          }
         })
         .catch((err) => {
           setIsloading(false);
@@ -71,30 +82,35 @@ export default function UnsplashOption() {
 
   return (
     <div>
-      <Label htmlFor="image" className="sr-only">
+      <Label htmlFor="unsplashPhotoId" className="sr-only">
         Unsplash Photo Id
       </Label>
-      <div className="flex w-full items-center gap-0 pt-2 relative">
+      <div className="flex w-full items-center gap-0 relative">
         <Input
           ref={linkInputRef}
           type="text"
-          className={'cursor-pointer rounded-b-none rounded-r-none'}
-          id="image"
+          className={
+            'cursor-pointer rounded-b-none rounded-r-none rounded-tl-none'
+          }
+          id="unsplashPhotoId"
           name="unsplashPhotoId"
           placeholder="Enter a valid unsplash photo ID, for example nk2xos4sFRc"
           required
-          onFocus={() => setError('')}
-          disabled={!!photoProps}
+          onFocus={() => setError(null)}
+          disabled={isLoading}
+          // freezes the photoId for form submission
+          readOnly={!!photoProps}
         />
         {photoProps ? (
           <Button
+            type="button"
             className="p-6 rounded-l-none rounded-br-none"
-            onClick={(e) => {
-              e.preventDefault();
+            onClick={() => {
               setPhotoId('');
+              setPhotoProps(null);
+              setIsPhotoIdValidated(false);
               if (linkInputRef.current) {
                 linkInputRef.current.value = '';
-                setPhotoProps(null);
               }
             }}
           >
@@ -104,7 +120,7 @@ export default function UnsplashOption() {
           <Button
             type="button"
             className="p-6 rounded-l-none rounded-br-none"
-            onClick={(e) => {
+            onClick={() => {
               if (linkInputRef.current) {
                 if (!linkInputRef.current.value) {
                   setError('Enter a valid photo id');
@@ -119,36 +135,26 @@ export default function UnsplashOption() {
         )}
         <div
           className={cn(
-            'inline absolute top-16 left-3 text-destructive py-2 px-4 rounded-sm drop-shadow-md bg-white',
+            'inline absolute bottom-8 left-3 text-sm text-destructive py-2 px-4 rounded-sm drop-shadow-md bg-white',
             !error && 'hidden'
           )}
         >
-          <div>
-            <MessageSquareWarningIcon className="inline" /> {error}
-          </div>
+          <MessageSquareWarningIcon
+            size={24}
+            className="inline pr-2"
+          />
+          {error}
         </div>
       </div>
-      <div>
+      <ImageWindow showBorder={!photoProps}>
         {photoProps ? (
-          <PhotoPreview
-            {...{
-              urls: photoProps.urls,
-              height: photoProps.height,
-              width: photoProps?.width,
-              blur_hash: photoProps?.blur_hash,
-            }}
-          />
+          <PhotoPreview photo={photoProps} />
+        ) : isLoading ? (
+          <Loader size={'md'} />
         ) : (
-          <div
-            className="flex items-center
-            justify-center w-full h-40 bg-slate-50 
-            border-dashed border-2 border-slate-200 
-            rounded-sm rounded-t-none border-t-0 text-slate-200"
-          >
-            {isLoading ? <Loader /> : <ImageIcon size="2rem" />}
-          </div>
+          <ImageIcon size="2rem" aria-hidden />
         )}
-      </div>
+      </ImageWindow>
     </div>
   );
 }

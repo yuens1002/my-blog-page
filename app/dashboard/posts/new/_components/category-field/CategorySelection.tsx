@@ -31,10 +31,10 @@ export default function CategorySelection({
   }
 
   return (
-    <Field className="mt-2">
+    <Field>
       <Label className="sr-only">select one or more categories</Label>
       <Listbox
-        name="select-categories"
+        /* omitting the name here, to not pollute formData */
         value={selectedCategories}
         onChange={setSelectedCategories}
         multiple

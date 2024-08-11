@@ -1,10 +1,12 @@
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 import {
-  MouseEvent,
+  type MouseEvent,
   type Dispatch,
   type SetStateAction,
+  useRef,
+  useState,
 } from 'react';
+import BadgeWindow from '../BadgeWindow';
+import BadgeButton from '../BadgeButton';
 
 type AddedCategoriesProps = {
   selectedCategories: string[];
@@ -18,6 +20,9 @@ export default function AddedCategories({
   createdCategories,
   setCreatedCategories,
 }: AddedCategoriesProps) {
+  const ref = useRef<HTMLSelectElement | null>(null);
+  const categories = [...selectedCategories, ...createdCategories];
+
   function handleClick(e: MouseEvent<HTMLButtonElement>) {
     const categoryNameToDelete = e.currentTarget.getAttribute(
       'data-value'
@@ -44,30 +49,31 @@ export default function AddedCategories({
   }
 
   return (
-    <div className="flex flex-wrap gap-3 border border-y-0 p-3 border-primary/20 min-h-20 bg-background">
+    <BadgeWindow hasBottomBorder={false}>
       {/* for form data collection */}
       <select
+        ref={ref}
         id="categories"
         name="categories"
         className="sr-only"
-        value={[...selectedCategories, ...createdCategories]}
+        required
+        value={categories}
         multiple
-        onChange={() => {}}
-      />
-      {[...selectedCategories, ...createdCategories].map(
-        (category) => (
-          <Button
-            type="button"
-            key={category}
-            size={'xs'}
-            className="text-xs pl-4 hover:bg-destructive"
-            onClick={handleClick}
-            data-value={category}
-          >
-            {category} <X className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      )}
-    </div>
+        onChange={() => {}} // react complains if this is not here
+      >
+        {categories.map((name) => (
+          <option key={name}>{name}</option>
+        ))}
+      </select>
+      {categories.map((category) => (
+        <BadgeButton
+          key={category}
+          handleClick={handleClick}
+          label={category}
+        >
+          {category}
+        </BadgeButton>
+      ))}
+    </BadgeWindow>
   );
 }

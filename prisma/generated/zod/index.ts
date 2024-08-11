@@ -14,7 +14,7 @@ export const TransactionIsolationLevelSchema = z.enum(['ReadUncommitted','ReadCo
 
 export const UserScalarFieldEnumSchema = z.enum(['id','kindeId','email','firstName','lastName','bio','createdAt','role']);
 
-export const PostScalarFieldEnumSchema = z.enum(['id','title','content','imageURL','authorId','isPublished','slug','tags','createdAt','updatedAt','status']);
+export const PostScalarFieldEnumSchema = z.enum(['id','title','content','imageURL','unsplashPhotoId','authorId','isPublished','slug','tags','createdAt','updatedAt','status']);
 
 export const StatsScalarFieldEnumSchema = z.enum(['id','likes','dislikes','views','postId']);
 
@@ -44,7 +44,7 @@ export type StatusType = `${z.infer<typeof StatusSchema>}`
 
 export const UserSchema = z.object({
   role: RoleSchema,
-  id: z.string().uuid(),
+  id: z.string(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -74,10 +74,11 @@ export const UserWithRelationsSchema: z.ZodType<UserWithRelations> = UserSchema.
 
 export const PostSchema = z.object({
   status: StatusSchema,
-  id: z.string().uuid(),
+  id: z.string(),
   title: z.string(),
   content: z.string().nullable(),
   imageURL: z.string().nullable(),
+  unsplashPhotoId: z.string().nullable(),
   authorId: z.string(),
   isPublished: z.boolean(),
   slug: z.string(),
@@ -110,7 +111,7 @@ export const PostWithRelationsSchema: z.ZodType<PostWithRelations> = PostSchema.
 /////////////////////////////////////////
 
 export const StatsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   likes: z.number().int(),
   dislikes: z.number().int(),
   views: z.number().int().nullable(),
@@ -137,7 +138,7 @@ export const StatsWithRelationsSchema: z.ZodType<StatsWithRelations> = StatsSche
 /////////////////////////////////////////
 
 export const CategorySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   name: z.string(),
   slug: z.string(),
 })
@@ -223,6 +224,7 @@ export const PostSelectSchema: z.ZodType<Prisma.PostSelect> = z.object({
   title: z.boolean().optional(),
   content: z.boolean().optional(),
   imageURL: z.boolean().optional(),
+  unsplashPhotoId: z.boolean().optional(),
   authorId: z.boolean().optional(),
   isPublished: z.boolean().optional(),
   slug: z.boolean().optional(),
@@ -320,20 +322,20 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
 
 export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> = z.union([
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     kindeId: z.string(),
     email: z.string()
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     kindeId: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     email: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   }),
   z.object({
     kindeId: z.string(),
@@ -347,7 +349,7 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
   }),
 ])
 .and(z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string().optional(),
   email: z.string().optional(),
   AND: z.union([ z.lazy(() => UserWhereInputSchema),z.lazy(() => UserWhereInputSchema).array() ]).optional(),
@@ -397,6 +399,7 @@ export const PostWhereInputSchema: z.ZodType<Prisma.PostWhereInput> = z.object({
   title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   content: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
@@ -414,6 +417,7 @@ export const PostOrderByWithRelationInputSchema: z.ZodType<Prisma.PostOrderByWit
   title: z.lazy(() => SortOrderSchema).optional(),
   content: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   imageURL: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  unsplashPhotoId: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
   isPublished: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
@@ -428,20 +432,20 @@ export const PostOrderByWithRelationInputSchema: z.ZodType<Prisma.PostOrderByWit
 
 export const PostWhereUniqueInputSchema: z.ZodType<Prisma.PostWhereUniqueInput> = z.union([
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     title: z.string(),
     slug: z.string()
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     title: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     slug: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   }),
   z.object({
     title: z.string(),
@@ -455,7 +459,7 @@ export const PostWhereUniqueInputSchema: z.ZodType<Prisma.PostWhereUniqueInput> 
   }),
 ])
 .and(z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string().optional(),
   slug: z.string().optional(),
   AND: z.union([ z.lazy(() => PostWhereInputSchema),z.lazy(() => PostWhereInputSchema).array() ]).optional(),
@@ -463,6 +467,7 @@ export const PostWhereUniqueInputSchema: z.ZodType<Prisma.PostWhereUniqueInput> 
   NOT: z.union([ z.lazy(() => PostWhereInputSchema),z.lazy(() => PostWhereInputSchema).array() ]).optional(),
   content: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   tags: z.lazy(() => StringNullableListFilterSchema).optional(),
@@ -479,6 +484,7 @@ export const PostOrderByWithAggregationInputSchema: z.ZodType<Prisma.PostOrderBy
   title: z.lazy(() => SortOrderSchema).optional(),
   content: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   imageURL: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
+  unsplashPhotoId: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
   isPublished: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
@@ -499,6 +505,7 @@ export const PostScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.PostScal
   title: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   content: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   imageURL: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   isPublished: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
@@ -531,18 +538,18 @@ export const StatsOrderByWithRelationInputSchema: z.ZodType<Prisma.StatsOrderByW
 
 export const StatsWhereUniqueInputSchema: z.ZodType<Prisma.StatsWhereUniqueInput> = z.union([
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     postId: z.string()
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   }),
   z.object({
     postId: z.string(),
   }),
 ])
 .and(z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   postId: z.string().optional(),
   AND: z.union([ z.lazy(() => StatsWhereInputSchema),z.lazy(() => StatsWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => StatsWhereInputSchema).array().optional(),
@@ -596,20 +603,20 @@ export const CategoryOrderByWithRelationInputSchema: z.ZodType<Prisma.CategoryOr
 
 export const CategoryWhereUniqueInputSchema: z.ZodType<Prisma.CategoryWhereUniqueInput> = z.union([
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     name: z.string(),
     slug: z.string()
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     name: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
     slug: z.string(),
   }),
   z.object({
-    id: z.string().uuid(),
+    id: z.string(),
   }),
   z.object({
     name: z.string(),
@@ -623,7 +630,7 @@ export const CategoryWhereUniqueInputSchema: z.ZodType<Prisma.CategoryWhereUniqu
   }),
 ])
 .and(z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string().optional(),
   slug: z.string().optional(),
   AND: z.union([ z.lazy(() => CategoryWhereInputSchema),z.lazy(() => CategoryWhereInputSchema).array() ]).optional(),
@@ -651,7 +658,7 @@ export const CategoryScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Cate
 }).strict();
 
 export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -663,7 +670,7 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object
 }).strict();
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -675,7 +682,7 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
 }).strict();
 
 export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -687,7 +694,7 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object
 }).strict();
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -699,7 +706,7 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
 }).strict();
 
 export const UserCreateManyInputSchema: z.ZodType<Prisma.UserCreateManyInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -710,7 +717,7 @@ export const UserCreateManyInputSchema: z.ZodType<Prisma.UserCreateManyInput> = 
 }).strict();
 
 export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -721,7 +728,7 @@ export const UserUpdateManyMutationInputSchema: z.ZodType<Prisma.UserUpdateManyM
 }).strict();
 
 export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -732,10 +739,11 @@ export const UserUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UserUncheckedU
 }).strict();
 
 export const PostCreateInputSchema: z.ZodType<Prisma.PostCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -748,10 +756,11 @@ export const PostCreateInputSchema: z.ZodType<Prisma.PostCreateInput> = z.object
 }).strict();
 
 export const PostUncheckedCreateInputSchema: z.ZodType<Prisma.PostUncheckedCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
@@ -764,10 +773,11 @@ export const PostUncheckedCreateInputSchema: z.ZodType<Prisma.PostUncheckedCreat
 }).strict();
 
 export const PostUpdateInputSchema: z.ZodType<Prisma.PostUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -780,10 +790,11 @@ export const PostUpdateInputSchema: z.ZodType<Prisma.PostUpdateInput> = z.object
 }).strict();
 
 export const PostUncheckedUpdateInputSchema: z.ZodType<Prisma.PostUncheckedUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -796,10 +807,11 @@ export const PostUncheckedUpdateInputSchema: z.ZodType<Prisma.PostUncheckedUpdat
 }).strict();
 
 export const PostCreateManyInputSchema: z.ZodType<Prisma.PostCreateManyInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
@@ -810,10 +822,11 @@ export const PostCreateManyInputSchema: z.ZodType<Prisma.PostCreateManyInput> = 
 }).strict();
 
 export const PostUpdateManyMutationInputSchema: z.ZodType<Prisma.PostUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -823,10 +836,11 @@ export const PostUpdateManyMutationInputSchema: z.ZodType<Prisma.PostUpdateManyM
 }).strict();
 
 export const PostUncheckedUpdateManyInputSchema: z.ZodType<Prisma.PostUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -837,7 +851,7 @@ export const PostUncheckedUpdateManyInputSchema: z.ZodType<Prisma.PostUncheckedU
 }).strict();
 
 export const StatsCreateInputSchema: z.ZodType<Prisma.StatsCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   likes: z.number().int().optional(),
   dislikes: z.number().int().optional(),
   views: z.number().int().optional().nullable(),
@@ -845,7 +859,7 @@ export const StatsCreateInputSchema: z.ZodType<Prisma.StatsCreateInput> = z.obje
 }).strict();
 
 export const StatsUncheckedCreateInputSchema: z.ZodType<Prisma.StatsUncheckedCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   likes: z.number().int().optional(),
   dislikes: z.number().int().optional(),
   views: z.number().int().optional().nullable(),
@@ -853,7 +867,7 @@ export const StatsUncheckedCreateInputSchema: z.ZodType<Prisma.StatsUncheckedCre
 }).strict();
 
 export const StatsUpdateInputSchema: z.ZodType<Prisma.StatsUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
@@ -861,7 +875,7 @@ export const StatsUpdateInputSchema: z.ZodType<Prisma.StatsUpdateInput> = z.obje
 }).strict();
 
 export const StatsUncheckedUpdateInputSchema: z.ZodType<Prisma.StatsUncheckedUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
@@ -869,7 +883,7 @@ export const StatsUncheckedUpdateInputSchema: z.ZodType<Prisma.StatsUncheckedUpd
 }).strict();
 
 export const StatsCreateManyInputSchema: z.ZodType<Prisma.StatsCreateManyInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   likes: z.number().int().optional(),
   dislikes: z.number().int().optional(),
   views: z.number().int().optional().nullable(),
@@ -877,14 +891,14 @@ export const StatsCreateManyInputSchema: z.ZodType<Prisma.StatsCreateManyInput> 
 }).strict();
 
 export const StatsUpdateManyMutationInputSchema: z.ZodType<Prisma.StatsUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const StatsUncheckedUpdateManyInputSchema: z.ZodType<Prisma.StatsUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
@@ -892,47 +906,47 @@ export const StatsUncheckedUpdateManyInputSchema: z.ZodType<Prisma.StatsUnchecke
 }).strict();
 
 export const CategoryCreateInputSchema: z.ZodType<Prisma.CategoryCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   slug: z.string(),
   posts: z.lazy(() => PostCreateNestedManyWithoutCategoriesInputSchema).optional()
 }).strict();
 
 export const CategoryUncheckedCreateInputSchema: z.ZodType<Prisma.CategoryUncheckedCreateInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   slug: z.string(),
   posts: z.lazy(() => PostUncheckedCreateNestedManyWithoutCategoriesInputSchema).optional()
 }).strict();
 
 export const CategoryUpdateInputSchema: z.ZodType<Prisma.CategoryUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   posts: z.lazy(() => PostUpdateManyWithoutCategoriesNestedInputSchema).optional()
 }).strict();
 
 export const CategoryUncheckedUpdateInputSchema: z.ZodType<Prisma.CategoryUncheckedUpdateInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   posts: z.lazy(() => PostUncheckedUpdateManyWithoutCategoriesNestedInputSchema).optional()
 }).strict();
 
 export const CategoryCreateManyInputSchema: z.ZodType<Prisma.CategoryCreateManyInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   slug: z.string()
 }).strict();
 
 export const CategoryUpdateManyMutationInputSchema: z.ZodType<Prisma.CategoryUpdateManyMutationInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const CategoryUncheckedUpdateManyInputSchema: z.ZodType<Prisma.CategoryUncheckedUpdateManyInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
@@ -1138,6 +1152,7 @@ export const PostCountOrderByAggregateInputSchema: z.ZodType<Prisma.PostCountOrd
   title: z.lazy(() => SortOrderSchema).optional(),
   content: z.lazy(() => SortOrderSchema).optional(),
   imageURL: z.lazy(() => SortOrderSchema).optional(),
+  unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
   isPublished: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
@@ -1152,6 +1167,7 @@ export const PostMaxOrderByAggregateInputSchema: z.ZodType<Prisma.PostMaxOrderBy
   title: z.lazy(() => SortOrderSchema).optional(),
   content: z.lazy(() => SortOrderSchema).optional(),
   imageURL: z.lazy(() => SortOrderSchema).optional(),
+  unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
   isPublished: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
@@ -1165,6 +1181,7 @@ export const PostMinOrderByAggregateInputSchema: z.ZodType<Prisma.PostMinOrderBy
   title: z.lazy(() => SortOrderSchema).optional(),
   content: z.lazy(() => SortOrderSchema).optional(),
   imageURL: z.lazy(() => SortOrderSchema).optional(),
+  unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
   isPublished: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
@@ -1742,10 +1759,11 @@ export const NestedFloatNullableFilterSchema: z.ZodType<Prisma.NestedFloatNullab
 }).strict();
 
 export const PostCreateWithoutAuthorInputSchema: z.ZodType<Prisma.PostCreateWithoutAuthorInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -1757,10 +1775,11 @@ export const PostCreateWithoutAuthorInputSchema: z.ZodType<Prisma.PostCreateWith
 }).strict();
 
 export const PostUncheckedCreateWithoutAuthorInputSchema: z.ZodType<Prisma.PostUncheckedCreateWithoutAuthorInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -1805,6 +1824,7 @@ export const PostScalarWhereInputSchema: z.ZodType<Prisma.PostScalarWhereInput> 
   title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   content: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
@@ -1815,7 +1835,7 @@ export const PostScalarWhereInputSchema: z.ZodType<Prisma.PostScalarWhereInput> 
 }).strict();
 
 export const UserCreateWithoutPostsInputSchema: z.ZodType<Prisma.UserCreateWithoutPostsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -1826,7 +1846,7 @@ export const UserCreateWithoutPostsInputSchema: z.ZodType<Prisma.UserCreateWitho
 }).strict();
 
 export const UserUncheckedCreateWithoutPostsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutPostsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   kindeId: z.string(),
   email: z.string(),
   firstName: z.string(),
@@ -1842,14 +1862,14 @@ export const UserCreateOrConnectWithoutPostsInputSchema: z.ZodType<Prisma.UserCr
 }).strict();
 
 export const StatsCreateWithoutPostInputSchema: z.ZodType<Prisma.StatsCreateWithoutPostInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   likes: z.number().int().optional(),
   dislikes: z.number().int().optional(),
   views: z.number().int().optional().nullable()
 }).strict();
 
 export const StatsUncheckedCreateWithoutPostInputSchema: z.ZodType<Prisma.StatsUncheckedCreateWithoutPostInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   likes: z.number().int().optional(),
   dislikes: z.number().int().optional(),
   views: z.number().int().optional().nullable()
@@ -1861,13 +1881,13 @@ export const StatsCreateOrConnectWithoutPostInputSchema: z.ZodType<Prisma.StatsC
 }).strict();
 
 export const CategoryCreateWithoutPostsInputSchema: z.ZodType<Prisma.CategoryCreateWithoutPostsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   slug: z.string()
 }).strict();
 
 export const CategoryUncheckedCreateWithoutPostsInputSchema: z.ZodType<Prisma.CategoryUncheckedCreateWithoutPostsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   slug: z.string()
 }).strict();
@@ -1889,7 +1909,7 @@ export const UserUpdateToOneWithWhereWithoutPostsInputSchema: z.ZodType<Prisma.U
 }).strict();
 
 export const UserUpdateWithoutPostsInputSchema: z.ZodType<Prisma.UserUpdateWithoutPostsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1900,7 +1920,7 @@ export const UserUpdateWithoutPostsInputSchema: z.ZodType<Prisma.UserUpdateWitho
 }).strict();
 
 export const UserUncheckedUpdateWithoutPostsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutPostsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   kindeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   firstName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1922,14 +1942,14 @@ export const StatsUpdateToOneWithWhereWithoutPostInputSchema: z.ZodType<Prisma.S
 }).strict();
 
 export const StatsUpdateWithoutPostInputSchema: z.ZodType<Prisma.StatsUpdateWithoutPostInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
 }).strict();
 
 export const StatsUncheckedUpdateWithoutPostInputSchema: z.ZodType<Prisma.StatsUncheckedUpdateWithoutPostInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   likes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   dislikes: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   views: z.union([ z.number().int(),z.lazy(() => NullableIntFieldUpdateOperationsInputSchema) ]).optional().nullable(),
@@ -1961,10 +1981,11 @@ export const CategoryScalarWhereInputSchema: z.ZodType<Prisma.CategoryScalarWher
 }).strict();
 
 export const PostCreateWithoutStatsInputSchema: z.ZodType<Prisma.PostCreateWithoutStatsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -1976,10 +1997,11 @@ export const PostCreateWithoutStatsInputSchema: z.ZodType<Prisma.PostCreateWitho
 }).strict();
 
 export const PostUncheckedCreateWithoutStatsInputSchema: z.ZodType<Prisma.PostUncheckedCreateWithoutStatsInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
@@ -2007,10 +2029,11 @@ export const PostUpdateToOneWithWhereWithoutStatsInputSchema: z.ZodType<Prisma.P
 }).strict();
 
 export const PostUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUpdateWithoutStatsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -2022,10 +2045,11 @@ export const PostUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUpdateWitho
 }).strict();
 
 export const PostUncheckedUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUncheckedUpdateWithoutStatsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -2037,10 +2061,11 @@ export const PostUncheckedUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUn
 }).strict();
 
 export const PostCreateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostCreateWithoutCategoriesInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -2052,10 +2077,11 @@ export const PostCreateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostCreate
 }).strict();
 
 export const PostUncheckedCreateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUncheckedCreateWithoutCategoriesInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
@@ -2088,10 +2114,11 @@ export const PostUpdateManyWithWhereWithoutCategoriesInputSchema: z.ZodType<Pris
 }).strict();
 
 export const PostCreateManyAuthorInputSchema: z.ZodType<Prisma.PostCreateManyAuthorInput> = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   title: z.string(),
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
+  unsplashPhotoId: z.string().optional().nullable(),
   isPublished: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
@@ -2101,10 +2128,11 @@ export const PostCreateManyAuthorInputSchema: z.ZodType<Prisma.PostCreateManyAut
 }).strict();
 
 export const PostUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostUpdateWithoutAuthorInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -2116,10 +2144,11 @@ export const PostUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostUpdateWith
 }).strict();
 
 export const PostUncheckedUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostUncheckedUpdateWithoutAuthorInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -2131,10 +2160,11 @@ export const PostUncheckedUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostU
 }).strict();
 
 export const PostUncheckedUpdateManyWithoutAuthorInputSchema: z.ZodType<Prisma.PostUncheckedUpdateManyWithoutAuthorInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -2144,28 +2174,29 @@ export const PostUncheckedUpdateManyWithoutAuthorInputSchema: z.ZodType<Prisma.P
 }).strict();
 
 export const CategoryUpdateWithoutPostsInputSchema: z.ZodType<Prisma.CategoryUpdateWithoutPostsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const CategoryUncheckedUpdateWithoutPostsInputSchema: z.ZodType<Prisma.CategoryUncheckedUpdateWithoutPostsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const CategoryUncheckedUpdateManyWithoutPostsInputSchema: z.ZodType<Prisma.CategoryUncheckedUpdateManyWithoutPostsInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const PostUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUpdateWithoutCategoriesInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
@@ -2177,10 +2208,11 @@ export const PostUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUpdate
 }).strict();
 
 export const PostUncheckedUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUncheckedUpdateWithoutCategoriesInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -2192,10 +2224,11 @@ export const PostUncheckedUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.P
 }).strict();
 
 export const PostUncheckedUpdateManyWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUncheckedUpdateManyWithoutCategoriesInput> = z.object({
-  id: z.union([ z.string().uuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  id: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),

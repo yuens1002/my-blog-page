@@ -2,12 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { CircleAlert } from 'lucide-react';
-import {
-  Dispatch,
-  ForwardedRef,
-  forwardRef,
-  SetStateAction,
-} from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
 type InputFieldProps = {
   handleInput: () => void;
@@ -15,25 +10,25 @@ type InputFieldProps = {
   name: string;
   buttonLabel: string;
   placeholder: string;
-  errorMessage: string | null;
-  setErrorMessage: Dispatch<SetStateAction<string | null>>;
+  useErrorMessage: [
+    string | null,
+    Dispatch<SetStateAction<string | null>>
+  ];
   isDisabled?: boolean;
+  useValue: [string, Dispatch<SetStateAction<string>>];
 };
 
-const InputField = forwardRef(function InputField(
-  {
-    handleInput,
-    placement = 'top',
-    name,
-    placeholder,
-    buttonLabel,
-    errorMessage,
-    setErrorMessage,
-    isDisabled = false,
-    ...props
-  }: InputFieldProps,
-  ref: ForwardedRef<HTMLInputElement | null>
-) {
+export default function InputField({
+  handleInput,
+  placement = 'top',
+  name,
+  placeholder,
+  buttonLabel,
+  useErrorMessage: [errorMessage, setErrorMessage],
+  isDisabled = false,
+  useValue: [value, setValue],
+  ...props
+}: InputFieldProps) {
   const InputClasses = {
     top: 'rounded-b-none rounded-tl-md rounded-r-none',
     bottom: 'rounded-t-none rounded-bl-md rounded-r-none',
@@ -55,19 +50,28 @@ const InputField = forwardRef(function InputField(
         {errorMessage}
       </div>
       <Input
-        ref={ref}
+        id={name}
         type="text"
+        value={value}
         className={cn(
           'rounded-b-none',
           placement === 'top' ? InputClasses.top : InputClasses.bottom
         )}
-        id={name}
-        name={name}
+        /* omitting the name here, to not pollute formData */
         placeholder={placeholder}
         onFocus={() => setErrorMessage(null)}
         onKeyDown={(e) => {
           errorMessage && setErrorMessage(null);
-          e.key === 'Enter' && handleInput();
+          if (e.key === 'Enter') {
+            // so it doesn't trigger form validation
+            e.preventDefault();
+            handleInput();
+          }
+        }}
+        onChange={(e) => {
+          console.log('onchange: ', value);
+          setValue(e.target.value);
+          console.log('onChange - input value: ', value);
         }}
         disabled={isDisabled}
         {...props}
@@ -87,6 +91,4 @@ const InputField = forwardRef(function InputField(
       </Button>
     </div>
   );
-});
-
-export default InputField;
+}
