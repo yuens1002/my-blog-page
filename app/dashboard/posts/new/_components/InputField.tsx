@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputProps } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { CircleAlert } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
@@ -7,22 +7,18 @@ import { Dispatch, SetStateAction } from 'react';
 type InputFieldProps = {
   handleInput: () => void;
   placement?: 'top' | 'bottom';
-  name: string;
   buttonLabel: string;
-  placeholder: string;
   useErrorMessage: [
     string | null,
     Dispatch<SetStateAction<string | null>>
   ];
   isDisabled?: boolean;
   useValue: [string, Dispatch<SetStateAction<string>>];
-};
+} & InputProps;
 
 export default function InputField({
   handleInput,
   placement = 'top',
-  name,
-  placeholder,
   buttonLabel,
   useErrorMessage: [errorMessage, setErrorMessage],
   isDisabled = false,
@@ -50,15 +46,12 @@ export default function InputField({
         {errorMessage}
       </div>
       <Input
-        id={name}
         type="text"
         value={value}
         className={cn(
           'rounded-b-none',
           placement === 'top' ? InputClasses.top : InputClasses.bottom
         )}
-        /* omitting the name here, to not pollute formData */
-        placeholder={placeholder}
         onFocus={() => setErrorMessage(null)}
         onKeyDown={(e) => {
           errorMessage && setErrorMessage(null);

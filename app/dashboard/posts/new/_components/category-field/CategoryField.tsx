@@ -1,18 +1,17 @@
 import { Label } from '@/components/ui/label';
+import CategorySelection from './CategorySelection';
+import AddedCategories from './AddedCategories';
+import CreateCategoryInput from './CreateCategoryInput';
 
-type CategoryFieldProps = {
-  children: React.ReactNode;
-};
-
-export default function CategoryField({
-  children,
-}: CategoryFieldProps) {
+export default function CategoryField() {
   return (
-    <div>
+    <>
       <Label htmlFor="categories" className="text-lg block pb-2">
-        Select or Create Categories*
+        Select or Create Categories
       </Label>
-      {children}
-    </div>
+      <CategorySelection />
+      <AddedCategories />
+      <CreateCategoryInput />
+    </>
   );
 }

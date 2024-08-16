@@ -2,83 +2,58 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, MessageSquareWarningIcon } from 'lucide-react';
-import {
-  useState,
-  useRef,
-  useEffect,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
-import type { UnsplashPhoto } from '@/lib/types';
+import { useState, useTransition } from 'react';
+
 import Loader from '@/components/Loader';
 import { cn } from '@/lib/utils';
 import PhotoPreview from './PhotoPreview';
 import ImageWindow from './ImageWindow';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
 
-type UnsplashOptionProps = {
-  useIsPhotoIdValidated: [boolean, Dispatch<SetStateAction<boolean>>];
-};
-
-export default function UnsplashOption({
-  useIsPhotoIdValidated: [_, setIsPhotoIdValidated],
-}: UnsplashOptionProps) {
-  const [photoId, setPhotoId] = useState<string>('');
-  const [photoProps, setPhotoProps] = useState<UnsplashPhoto | null>(
-    null
-  );
-  const [isLoading, setIsloading] = useState(false);
-  const linkInputRef = useRef<HTMLInputElement>(null);
+export default function UnsplashOption() {
+  const [{ photoId, photoProps }, dispatch] = useNewPostContext();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!photoId || photoProps) return;
+  const [isPending, startTransition] = useTransition();
 
+  const handlePreview = () => {
+    if (!photoId) {
+      setError('Enter a valid photo id');
+      return;
+    }
     const sanitizeId = (id: string) => {
       return id.trim().split(' ').join('');
     };
-
     const isPhotoIdValid = (id: string) => {
       const charCount = 11;
       return charCount === sanitizeId(id).length;
     };
-
-    if (isPhotoIdValid(photoId)) {
-      const sanitizedId = sanitizeId(photoId);
-      setIsloading(true);
-      setError(null);
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_ROOT}/unsplash/photo?photoid=${sanitizedId}`
-      )
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error('No photo found');
-          } else {
-            return res.json();
-          }
-        })
-        .then(({ data }) => {
-          const { urls, ...otherRes } = data;
-          const newUrls = { ...urls };
-          setPhotoProps({ ...otherRes, urls: newUrls });
-          setIsloading(false);
-          setIsPhotoIdValidated(true);
-          if (linkInputRef.current) {
-            linkInputRef.current.value = sanitizedId;
-          }
-        })
-        .catch((err) => {
-          setIsloading(false);
-          if (err instanceof Error) setError(err.message);
-        });
-    } else {
-      setIsloading(false);
+    const sanitizedId = sanitizeId(photoId);
+    const isValidPhotoId = isPhotoIdValid(sanitizedId);
+    if (!isValidPhotoId) {
       setError('Enter a 11 char valid unsplash photo id');
+      return;
     }
-
-    return () => {
-      setPhotoId('');
-    };
-  }, [photoId, photoProps]);
+    startTransition(async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_ROOT}/unsplash/photo?photoid=${sanitizedId}`
+        );
+        if (!res.ok) throw new Error('No photo found');
+        const { data } = await res.json();
+        const { urls, ...otherRes } = data;
+        const newUrls = { ...urls };
+        dispatch({
+          type: 'SET_PHOTO_PROPS',
+          payload: { ...otherRes, urls: newUrls },
+        });
+        // ensure the photoId input field is valid before submitting the form
+        dispatch({ type: 'SET_PHOTO_ID', payload: sanitizedId });
+      } catch (err) {
+        if (err instanceof Error) setError(err.message);
+      }
+    });
+  };
 
   return (
     <div>
@@ -87,31 +62,31 @@ export default function UnsplashOption({
       </Label>
       <div className="flex w-full items-center gap-0 relative">
         <Input
-          ref={linkInputRef}
+          value={photoId}
           type="text"
-          className={
-            'cursor-pointer rounded-b-none rounded-r-none rounded-tl-none'
-          }
+          className="cursor-pointer rounded-b-none rounded-r-none rounded-tl-none read-only:cursor-default read-only:pointer-events-none"
           id="unsplashPhotoId"
           name="unsplashPhotoId"
           placeholder="Enter a valid unsplash photo ID, for example nk2xos4sFRc"
-          required
           onFocus={() => setError(null)}
-          disabled={isLoading}
+          disabled={isPending}
           // freezes the photoId for form submission
           readOnly={!!photoProps}
+          onChange={(e) =>
+            dispatch({
+              type: 'SET_PHOTO_ID',
+              payload: e.target.value,
+            })
+          }
+          tabIndex={photoProps ? -1 : 0}
         />
         {photoProps ? (
           <Button
             type="button"
             className="p-6 rounded-l-none rounded-br-none"
             onClick={() => {
-              setPhotoId('');
-              setPhotoProps(null);
-              setIsPhotoIdValidated(false);
-              if (linkInputRef.current) {
-                linkInputRef.current.value = '';
-              }
+              dispatch({ type: 'SET_PHOTO_ID', payload: '' });
+              dispatch({ type: 'SET_PHOTO_PROPS', payload: null });
             }}
           >
             Undo
@@ -120,15 +95,8 @@ export default function UnsplashOption({
           <Button
             type="button"
             className="p-6 rounded-l-none rounded-br-none"
-            onClick={() => {
-              if (linkInputRef.current) {
-                if (!linkInputRef.current.value) {
-                  setError('Enter a valid photo id');
-                }
-                setPhotoId(linkInputRef.current.value);
-              }
-            }}
-            disabled={isLoading}
+            onClick={handlePreview}
+            disabled={isPending}
           >
             Preview
           </Button>
@@ -149,7 +117,7 @@ export default function UnsplashOption({
       <ImageWindow showBorder={!photoProps}>
         {photoProps ? (
           <PhotoPreview photo={photoProps} />
-        ) : isLoading ? (
+        ) : isPending ? (
           <Loader size={'md'} />
         ) : (
           <ImageIcon size="2rem" aria-hidden />

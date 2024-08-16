@@ -1,4 +1,5 @@
-import { Category } from '@prisma/client';
+import { CreatePostData } from '@/app/dashboard/_actions/managePosts';
+import { Category, Post } from '@prisma/client';
 import { z } from 'zod';
 
 export type dummyPost = {
@@ -38,3 +39,9 @@ export const createPhotoSchema = z.object({
 });
 
 export type UnsplashPhoto = z.infer<typeof createPhotoSchema>;
+
+export type InitialFormState = {
+  message: string | Record<string, string[]>;
+  status: string;
+  data?: Post;
+};

@@ -1,39 +1,53 @@
-'use client';
-
-import { useActionState, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useRef, FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 
 import { Textarea } from '@/components/ui/textarea';
 import ImageOptionTabs from './image-upload/ImageOptionTabs';
-import AddedCategories from './category-field/AddedCategories';
-import CategorySelection from './category-field/CategorySelection';
-import CreateCategoryInput from './category-field/CreateCategoryInput';
-import AddTagsField from './create-tags/AddTagsField';
 import CategoryField from './category-field/CategoryField';
-import { createPost } from '@/app/dashboard/_actions/managePosts';
+import {
+  createPost,
+  updatePost,
+} from '@/app/dashboard/_actions/managePosts';
 import UnsplashOption from './image-upload/UnsplashOption';
 import ImageUploadOption from './image-upload/ImageUploadOption';
-import Loader from '@/components/Loader';
+import { InitialFormState } from '@/lib/types';
+import SubmitButton from '@/components/SubmitButton';
+import { Post } from '@prisma/client';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import AddTagsField from './create-tags/AddTagsField';
 
 export default function NewPostForm() {
-  const [selectedCategories, setSelectedCategories] = useState<
-    string[]
-  >([]);
-  const [createdCategories, setCreatedCategories] = useState<
-    string[]
-  >([]);
-  const [addedTags, setAddedTags] = useState<string[]>([]);
-  // due to form validation, otherwise, we would use refs
-  const [createCategoryInput, setCreateCategoryInput] = useState('');
-  const [addTagInput, setAddTagInput] = useState('');
-  const [isPhotoIdValidated, setIsPhotoIdValidated] = useState(false);
-  const [imageOption, setImageOption] = useState<
-    'upload' | 'upsplash'
-  >('upload');
+  const [
+    {
+      createCategoryInput,
+      addTagInput,
+      imageOption,
+      photoId,
+      photoProps,
+    },
+    dispatch,
+  ] = useNewPostContext();
+  const titleInput = useRef<HTMLInputElement>(null);
+  const contentInput = useRef<HTMLTextAreaElement>(null);
+
+  const [createdPostData, setCreatedPostData] = useState<Post | null>(
+    null
+  );
+  //prettier ignore
+  const [submitAction, setSubmitAction] = useState<
+    'PUBLISH' | 'DRAFT' | 'UPDATE' | ''
+  >('');
+  const [isPending, setIsPending] = useState(false);
   const { toast } = useToast();
+
+  const resetForm = () => {
+    dispatch({ type: 'RESET' });
+    setSubmitAction('');
+    titleInput.current && (titleInput.current.value = '');
+    contentInput.current && (contentInput.current.value = '');
+  };
 
   const errors = {
     unsplashPhotoId:
@@ -42,19 +56,35 @@ export default function NewPostForm() {
     addTagInput: `You have entered "${addTagInput}" as a new tag, click the Add button to confirm`,
   };
 
-  const areInputsValid = () => {
-    let isPhotoValid = false;
+  const isImageInputValid = () => {
+    console.log('🚀 ~ isImageInputValid ~ imageOption:', imageOption);
+    let isImageValid = false;
     if (imageOption === 'upload') {
-      isPhotoValid = true;
-    } else if (isPhotoIdValidated) {
-      isPhotoValid = true;
+      isImageValid = true;
+    } else if (!photoId || (photoId && photoProps)) {
+      isImageValid = true;
     }
+    return isImageValid;
+  };
+
+  const areInputsValid = () => {
+    console.log('🚀 ~ areInputsValid ~ !addTagInput:', !addTagInput);
     console.log(
-      '🚀 ~ areInputsValid ~ !isPhotoIdValidated || createCategoryInput || addTagInput:',
-      Boolean(isPhotoValid && !createCategoryInput && !addTagInput)
+      '🚀 ~ areInputsValid ~ !createCategoryInput:',
+      !createCategoryInput
+    );
+    console.log(
+      '🚀 ~ areInputsValid ~ isImageInputValid():',
+      isImageInputValid()
+    );
+    console.log(
+      '🚀 ~ areInputsValid ~ Boolean ',
+      Boolean(
+        isImageInputValid() && !createCategoryInput && !addTagInput
+      )
     );
     return Boolean(
-      isPhotoValid && !createCategoryInput && !addTagInput
+      isImageInputValid() && !createCategoryInput && !addTagInput
     );
   };
 
@@ -65,8 +95,9 @@ export default function NewPostForm() {
       duration: 6000,
     };
   };
+
   const handleInputError = () => {
-    if (!isPhotoIdValidated) {
+    if (imageOption === 'unsplash' && !photoProps && photoId) {
       toast(createToast('Unsplash Photo ID', 'unsplashPhotoId'));
     }
     if (createCategoryInput) {
@@ -77,102 +108,148 @@ export default function NewPostForm() {
     }
   };
 
-  const [formState, formAction, pending] = useActionState(
-    createPost,
-    { message: '' }
-  );
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    const formData = new FormData(e.target as HTMLFormElement);
+    if (!areInputsValid()) {
+      setIsPending(false);
+      handleInputError();
+      return;
+    }
 
-  formState?.message && toast({ description: formState?.message });
+    console.log('🚀 ~ NewPostForm ~ formData:', formData);
+    console.log('🚀 ~ NewPostForm ~ submitAction:', submitAction);
 
-  const handlePublish = (formData: FormData) => {
-    formData.append('isPublished', 'true');
-    areInputsValid() ? formAction(formData) : handleInputError();
+    switch (submitAction) {
+      case 'PUBLISH':
+        formData.append('isPublished', true.toString());
+        formData.append('status', 'PUBLISH');
+        submitForm(createPost);
+        break;
+      case 'DRAFT':
+        formData.append('status', 'DRAFT');
+        submitForm(createPost);
+        break;
+      case 'UPDATE':
+        if (createdPostData?.id) {
+          const updatePostWithId = updatePost.bind(
+            null,
+            createdPostData.id
+          );
+          submitForm(updatePostWithId);
+        }
+        break;
+      default:
+        toast({ description: "Can't submit form, try again later" });
+    }
+
+    async function submitForm(
+      formAction: (formData: FormData) => Promise<any>
+    ) {
+      const { status, message, data } = (await formAction(
+        formData
+      )) as InitialFormState;
+      console.log(
+        '🚀 ~ useEffect ~ message, status:',
+        message,
+        status
+      );
+      setIsPending(false);
+      if (typeof message === 'string') {
+        toast({ description: message });
+        if (status === 'ok') {
+          if (submitAction === 'PUBLISH') {
+            resetForm();
+          } else if (data) {
+            setCreatedPostData(data);
+          }
+        }
+      } else {
+        Object.entries(message).forEach(([key, value]) => {
+          toast({
+            title: key,
+            description: value.join(', '),
+          });
+        });
+      }
+    }
   };
 
   return (
-    <form className="block space-y-10">
+    <form className="block space-y-10" onSubmit={handleFormSubmit}>
       <div className="mt-12 space-y-2">
         <Label htmlFor="title" className="text-lg">
           Title*
         </Label>
         <Input
+          ref={titleInput}
           placeholder="ie. The Art of Peace"
           type="text"
           id="title"
           name="title"
+          maxLength={256}
+          minLength={10}
           required
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="content" className="text-lg">
-          Content*
+          Content
         </Label>
         <Textarea
-          placeholder="10,000 max characters"
+          ref={contentInput}
+          placeholder="10,000 characters limit"
           id="content"
           name="content"
           maxLength={10000}
-          required
+          minLength={20}
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
         <div className="grid grid-cols-1 gap-8 md:gap-16">
-          <CategoryField>
-            <CategorySelection
-              selectedCategories={selectedCategories}
-              setSelectedCategories={setSelectedCategories}
-            />
-            <AddedCategories
-              selectedCategories={selectedCategories}
-              setSelectedCategories={setSelectedCategories}
-              createdCategories={createdCategories}
-              setCreatedCategories={setCreatedCategories}
-            />
-            <CreateCategoryInput
-              createdCategories={createdCategories}
-              setCreatedCategories={setCreatedCategories}
-              useCreateCategoryInput={[
-                createCategoryInput,
-                setCreateCategoryInput,
-              ]}
-            />
-          </CategoryField>
-          <AddTagsField
-            setAddedTags={setAddedTags}
-            addedTags={addedTags}
-            useAddTagInput={[addTagInput, setAddTagInput]}
-          />
+          <div>
+            <CategoryField />
+          </div>
+          <div>
+            <AddTagsField />
+          </div>
         </div>
-        <ImageOptionTabs
-          useImageOption={[imageOption, setImageOption]}
-        >
-          {imageOption === 'upsplash' ? (
-            <UnsplashOption
-              useIsPhotoIdValidated={[
-                isPhotoIdValidated,
-                setIsPhotoIdValidated,
-              ]}
-            />
-          ) : (
+        <ImageOptionTabs>
+          {imageOption === 'upload' ? (
             <ImageUploadOption />
+          ) : (
+            <UnsplashOption />
           )}
         </ImageOptionTabs>
         <div className="md:col-span-2">
           <div className="flex justify-between items-center gap-4">
             <p className="text-sm">*Required fields</p>
             <div className="flex justify-end gap-4">
-              <Button variant={'outline'}>Save Draft</Button>
-              <Button
-                type="submit"
-                formAction={handlePublish}
-                disabled={pending}
+              <SubmitButton
+                aria-disabled={isPending}
+                showLoader={
+                  isPending &&
+                  (submitAction === 'DRAFT' ||
+                    submitAction === 'UPDATE')
+                }
+                onClick={() =>
+                  createdPostData
+                    ? setSubmitAction('UPDATE')
+                    : setSubmitAction('DRAFT')
+                }
+                variant="outline"
               >
-                {pending ? <Loader size="sm" /> : 'Publish'}
-              </Button>
+                {createdPostData ? 'Update' : 'Save'} Draft
+              </SubmitButton>
+              <SubmitButton
+                aria-disabled={isPending}
+                showLoader={isPending && submitAction === 'PUBLISH'}
+                onClick={() => setSubmitAction('PUBLISH')}
+              >
+                Publish
+              </SubmitButton>
             </div>
-            <p aria-live="polite" className="sr-only">
-              {formState?.message}
-            </p>
           </div>
         </div>
       </div>

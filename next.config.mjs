@@ -12,6 +12,12 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '8mb',
+    },
+  },
+
   // need fs to work in utils.ts file
   webpack: (config) => {
     config.resolve.fallback = { fs: false, os: false };

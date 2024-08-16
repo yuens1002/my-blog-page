@@ -1,21 +1,14 @@
 import { Label } from '@/components/ui/label';
 import type { Dispatch, MouseEvent, SetStateAction } from 'react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import InputField from '../InputField';
 import BadgeButton from '../BadgeButton';
 import BadgeWindow from '../BadgeWindow';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
 
-type AddTagsInputProps = {
-  addedTags: string[];
-  setAddedTags: Dispatch<SetStateAction<string[]>>;
-  useAddTagInput: [string, Dispatch<SetStateAction<string>>];
-};
-
-export default function AddTagsField({
-  setAddedTags,
-  addedTags,
-  useAddTagInput: [inputValue, setInputValue],
-}: AddTagsInputProps) {
+export default function AddTagsField() {
+  const [{ addedTags, addTagInput: inputValue }, dispatch] =
+    useNewPostContext();
   const errorMessages = {
     duplicate: 'Tag already added, enter a different name',
     empty: 'Enter a tag name',
@@ -35,30 +28,17 @@ export default function AddTagsField({
       setErrorMessage(errorMessages.duplicate);
       return;
     }
-    setAddedTags((cur) => [...cur, normalizedValue]);
-    setInputValue('');
+    dispatch({ type: 'ADD_TO_ADDED_TAGS', payload: normalizedValue });
+    dispatch({ type: 'SET_ADD_TAG_INPUT', payload: '' });
   }
   function handleClick(e: MouseEvent<HTMLButtonElement>) {
     const TagNameToDelete = e.currentTarget.getAttribute(
       'data-value'
     ) as string;
     if (addedTags.includes(TagNameToDelete)) {
-      setAddedTags((cur) => {
-        return cur.toSpliced(
-          cur.findIndex(
-            (categoryName) => categoryName === TagNameToDelete
-          ),
-          1
-        );
-      });
-    } else {
-      setAddedTags((cur) => {
-        return cur.toSpliced(
-          cur.findIndex(
-            (categoryName) => categoryName === TagNameToDelete
-          ),
-          1
-        );
+      dispatch({
+        type: 'DEL_FROM_ADDED_TAGS',
+        payload: TagNameToDelete,
       });
     }
   }
@@ -92,7 +72,14 @@ export default function AddTagsField({
       </Label>
       <InputField
         name="tag-input"
-        useValue={[inputValue, setInputValue]}
+        useValue={[
+          inputValue,
+          (value) =>
+            dispatch({
+              type: 'SET_ADD_TAG_INPUT',
+              payload: value,
+            }),
+        ]}
         handleInput={handleInput}
         buttonLabel="Add"
         placeholder="Add optional tags to your post"

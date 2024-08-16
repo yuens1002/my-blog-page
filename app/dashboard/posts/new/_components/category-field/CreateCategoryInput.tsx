@@ -1,29 +1,13 @@
 import { Label } from '@/components/ui/label';
 import type { Dispatch, SetStateAction } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import InputField from '../InputField';
 import { UseFetchCategoryPayload } from '@/lib/types';
 import { useFetch } from '@/hooks/useFetch';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
 
-type CreateCategoryInput = {
-  setCreatedCategories: Dispatch<SetStateAction<string[]>>;
-  createdCategories: string[];
-  useCreateCategoryInput: [string, Dispatch<SetStateAction<string>>];
-};
-
-export default function CreateCategoryInput({
-  setCreatedCategories,
-  createdCategories,
-  useCreateCategoryInput: [inputValue, setInputValue],
-}: CreateCategoryInput) {
-  const errorMessages = {
-    duplicate:
-      'Category already created/selected, enter a different name',
-    empty: 'Enter a category name',
-  };
-  const [errorMessage, setErrorMessage] = useState<string | null>(
-    null
-  );
+export default function CreateCategoryInput() {
+  // use a transition here
   const url = `${process.env.NEXT_PUBLIC_API_ROOT}/categories`;
   const [categories, isPending, error]: UseFetchCategoryPayload =
     useFetch(url);
@@ -32,6 +16,19 @@ export default function CreateCategoryInput({
     throw new Error('something went wrong while loading categories');
   }
 
+  const [
+    { createdCategories, createCategoryInput: inputValue },
+    dispatch,
+  ] = useNewPostContext();
+
+  const errorMessages = {
+    duplicate:
+      'Category already created/selected, enter a different name',
+    empty: 'Enter a category name',
+  };
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    null
+  );
   const handleInput = useCallback(() => {
     if (!categories) return;
     const categoryNameArr = categories.map(
@@ -59,8 +56,11 @@ export default function CreateCategoryInput({
       setErrorMessage(errorMessages.duplicate);
       return;
     }
-    setCreatedCategories((cur) => [...cur, sanitizedInputValue]);
-    setInputValue('');
+    dispatch({
+      type: 'SET_CREATED_CATEGORIES',
+      payload: sanitizedInputValue,
+    });
+    dispatch({ type: 'SET_CREATE_CATEGORY_INPUT', payload: '' });
   }, [inputValue, createdCategories, categories]);
 
   return (
@@ -69,16 +69,31 @@ export default function CreateCategoryInput({
         create a post category
       </Label>
       <InputField
-        placement="bottom"
-        name="create-category"
-        handleInput={handleInput}
-        buttonLabel="Create"
-        useValue={[inputValue, setInputValue]}
+        id="create-category"
+        /*  
+          omitting the name attribute to not pollute 
+          formData sent to server. This field only
+          provides the interface for the user and the
+          input(s) is/are added to the categories formData 
+          entry for processing.
+        */
         placeholder={
           isPending
             ? 'Loading categories...'
             : 'Enter a category name'
         }
+        placement="bottom"
+        handleInput={handleInput}
+        buttonLabel="Create"
+        useValue={[
+          inputValue,
+          (value) => {
+            dispatch({
+              type: 'SET_CREATE_CATEGORY_INPUT',
+              payload: value,
+            });
+          },
+        ]}
         useErrorMessage={[errorMessage, setErrorMessage]}
         isDisabled={isPending}
       />

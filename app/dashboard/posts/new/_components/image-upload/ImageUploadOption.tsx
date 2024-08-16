@@ -5,13 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
-import { type ChangeEvent, useState, useRef } from 'react';
+import { useRef } from 'react';
+import type { ChangeEvent } from 'react';
 import ImageWindow from './ImageWindow';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
 
 /* eslint-disable @next/next/no-img-element */
-
 export default function FileUpload() {
-  const [image, setImage] = useState<string | null>(null);
+  const [{ image }, dispatch] = useNewPostContext();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +22,9 @@ export default function FileUpload() {
         if (event?.target?.result) {
           //ensure only text is being passed
           const resultText = event.target.result.toString();
-          setImage(resultText);
+          dispatch({ type: 'SET_IMAGE', payload: resultText });
+          // clears an unconfirmed photoId if a user has entered it
+          dispatch({ type: 'SET_PHOTO_ID', payload: '' });
         }
       };
       reader.readAsDataURL(event.target.files[0]);
@@ -36,22 +39,23 @@ export default function FileUpload() {
       <div className="flex w-full items-center gap-0 rounded-tl-none">
         <Input
           ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={onImageChange}
-          className={cn(
-            'pt-3 cursor-pointer rounded-b-none rounded-tl-none',
-            image && 'rounded-r-none'
-          )}
           id="imageFile"
           name="imageFile"
-          required
+          className={cn(
+            'pt-3 cursor-pointer rounded-b-none rounded-tl-none',
+            image &&
+              'rounded-r-none pointer-events-none cursor-default'
+          )}
+          type="file"
+          accept="image/*"
+          tabIndex={image ? -1 : 0}
+          onChange={onImageChange}
         />
         {image && (
           <Button
             className="p-6 rounded-b-none rounded-l-none"
             onClick={() => {
-              setImage(null);
+              dispatch({ type: 'SET_IMAGE', payload: null });
               if (fileInputRef.current) {
                 fileInputRef.current.value = '';
               }

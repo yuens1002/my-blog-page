@@ -1,5 +1,6 @@
-import type { Dispatch, SetStateAction } from 'react';
 import { useFetch } from '@/hooks/useFetch';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { UseFetchCategoryPayload } from '@/lib/types';
 
 import {
   Field,
@@ -11,17 +12,9 @@ import {
 } from '@headlessui/react';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import clsx from 'clsx';
-import { UseFetchCategoryPayload } from '@/lib/types';
 
-type CategorySelectionProps = {
-  selectedCategories: string[];
-  setSelectedCategories: Dispatch<SetStateAction<string[]>>;
-};
-
-export default function CategorySelection({
-  selectedCategories,
-  setSelectedCategories,
-}: CategorySelectionProps) {
+export default function CategorySelection() {
+  const [{ selectedCategories }, dispatch] = useNewPostContext();
   const url = `${process.env.NEXT_PUBLIC_API_ROOT}/categories`;
   const [categories, isPending, error]: UseFetchCategoryPayload =
     useFetch(url);
@@ -36,7 +29,12 @@ export default function CategorySelection({
       <Listbox
         /* omitting the name here, to not pollute formData */
         value={selectedCategories}
-        onChange={setSelectedCategories}
+        onChange={(selectedVal) =>
+          dispatch({
+            type: 'SET_SELECTED_CATEGORIES',
+            payload: selectedVal,
+          })
+        }
         multiple
       >
         <ListboxButton

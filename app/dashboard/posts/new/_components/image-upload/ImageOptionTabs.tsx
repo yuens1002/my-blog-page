@@ -1,21 +1,19 @@
 'use client';
 
 import { Label } from '@/components/ui/label';
-import type { Dispatch, SetStateAction } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
 
-type NewPostImageUploadTabsProps = {
+type ImageOptionTabsProps = {
   children: React.ReactNode;
-  useImageOption: [
-    string,
-    Dispatch<SetStateAction<'upload' | 'upsplash'>>
-  ];
 };
 
-export default function NewPostImageUploadTabs({
+export default function ImageOptionTabs({
   children,
-  useImageOption: [imageOption, setImageOption],
-}: NewPostImageUploadTabsProps) {
+}: ImageOptionTabsProps) {
+  const [{ imageOption, photoProps, image }, dispatch] =
+    useNewPostContext();
   return (
     <div>
       <Label
@@ -24,28 +22,41 @@ export default function NewPostImageUploadTabs({
         }
         className="text-lg block pb-2"
       >
-        Choose an Image Option*
+        Choose an Image Option
       </Label>
       <div className="inline-block border border-primary/20 p-2 rounded-t-sm rounded-b-none border-b-0">
         <Button
           type="button"
-          className="rounded-r-none"
+          className={cn(
+            'rounded-r-none',
+            imageOption === 'upload' &&
+              '!bg-transparent text-primary border border-r-0 border-primary/20 cursor-default pointer-events-none'
+          )}
           size="sm"
-          disabled={imageOption === 'upload'}
           onClick={() => {
-            setImageOption('upload');
+            dispatch({ type: 'SET_IMAGE_OPTION', payload: 'upload' });
           }}
+          disabled={!!photoProps}
+          tabIndex={imageOption === 'upload' ? -1 : 0}
         >
           Image Upload
         </Button>
         <Button
           type="button"
-          className="rounded-l-none"
+          className={cn(
+            'rounded-l-none',
+            imageOption === 'unsplash' &&
+              '!bg-transparent text-primary border border-l-0 border-primary/20 cursor-default pointer-events-none'
+          )}
           size="sm"
-          disabled={imageOption === 'upsplash'}
           onClick={() => {
-            setImageOption('upsplash');
+            dispatch({
+              type: 'SET_IMAGE_OPTION',
+              payload: 'unsplash',
+            });
           }}
+          disabled={!!image}
+          tabIndex={imageOption === 'unsplash' ? -1 : 0}
         >
           Unsplash
         </Button>
