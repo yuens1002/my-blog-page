@@ -64,4 +64,9 @@ export function setEnvValue(key: string, value: string) {
   fs.writeFileSync('./.env', ENV_VARS.join(os.EOL));
 }
 
-// setEnvValue('VAR1', 'ENV_1_VAL');
+export function keysToObject(arr: string[]) {
+  return arr.reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+  }, {} as Record<string, boolean>);
+}

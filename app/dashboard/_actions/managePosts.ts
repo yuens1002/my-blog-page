@@ -2,13 +2,20 @@
 
 import db from '@/db/prismaDb';
 import { z } from 'zod';
-import fs from 'fs/promises';
-import fullFs from 'fs';
-import path from 'path';
-
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { slugify } from '@/lib/utils';
-import { StatusType } from '@/prisma/generated/zod';
+import {
+  PostWithRelations,
+  StatusType,
+} from '@/prisma/generated/zod';
+import {
+  processUploadedImage,
+  setNextImagePath,
+} from '@/lib/processImageFile';
+import { revalidatePath } from 'next/cache';
+import { Post } from '@prisma/client';
+
+revalidatePath('/dashboard/posts/edit/[postId]', 'page');
 
 const MAX_FILE_SIZE = 800000;
 console.log('🚀 ~ MAX_FILE_SIZE:', MAX_FILE_SIZE);
@@ -33,9 +40,10 @@ const imageSchema = z
 
 const { getUser } = getKindeServerSession();
 
-export type CreatePostData = z.infer<typeof createPostSchema>;
+export type PostPublishData = z.infer<typeof PostPublishSchema>;
+export type PostDraftData = z.infer<typeof PostDraftSchema>;
 
-const createPostSchema = z
+const PostPublishSchema = z
   .object({
     title: z.string().min(10).max(256),
     content: z.string().min(20).max(10000),
@@ -52,9 +60,7 @@ const createPostSchema = z
     'Upload an image or provide an unsplash photo id.'
   );
 
-export type CreateDraftData = z.infer<typeof createDraftSchema>;
-
-const createDraftSchema = z.object({
+const PostDraftSchema = z.object({
   title: z.string().min(10).max(256),
   content: z.string().max(10000).optional(),
   imageFile: imageSchema.optional(),
@@ -63,7 +69,22 @@ const createDraftSchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
-export async function createPost(formData: FormData) {
+type FormDataObject = Record<
+  string,
+  string | File | (File | string)[]
+>;
+
+export type PostResult = {
+  status: string;
+  message: string | FormDataObject;
+  data?: Post;
+};
+
+async function processFormData(
+  formData: FormData
+): Promise<
+  (PostPublishData & PostDraftData) | Omit<PostResult, 'data'>
+> {
   // take out the imageFile input if none is selected
   const imageFileData = formData.get('imageFile');
   if (imageFileData && imageFileData instanceof File) {
@@ -78,8 +99,7 @@ export async function createPost(formData: FormData) {
   }
 
   console.log('🚀 ~ createPost ~ formData ~ after:', formData);
-  //prettier-ignore
-  const formDataObject: Record<string, string | File | (File | string)[]> = {};
+  const formDataObject: FormDataObject = {};
 
   for (const formDataEntry of formData) {
     const [key, value] = formDataEntry;
@@ -95,20 +115,20 @@ export async function createPost(formData: FormData) {
     }
   }
   const statusType = formData.get('status');
-  console.error('🚀 ~ createPost ~ statusType:', statusType);
+  console.log('🚀 ~ createPost ~ statusType:', statusType);
   let result;
   switch (statusType) {
     case 'PUBLISHED':
-      result = createPostSchema.safeParse(formDataObject);
+      result = PostPublishSchema.safeParse(formDataObject);
       break;
     case 'DRAFT':
-      result = createDraftSchema.safeParse(formDataObject);
+      result = PostDraftSchema.safeParse(formDataObject);
       break;
     default:
       console.error('Invalid status type');
       return {
         status: 'error',
-        message: 'An unknown action invoked while creating a post 🤔',
+        message: 'Invalid post status requested. 🤔',
       };
   }
 
@@ -120,106 +140,135 @@ export async function createPost(formData: FormData) {
     };
   }
 
-  const {
-    imageFile,
-    title,
-    content,
-    categories,
-    unsplashPhotoId,
-    isPublished,
-    tags,
-    status,
-  } = result.data as CreatePostData;
+  result.data.imageFile &&
+    (await processUploadedImage(result.data.imageFile));
+  return result.data as PostPublishData;
+}
 
-  imageFile && (await processUploadedImage(imageFile));
-
-  function setImageFileName(fileName: string): string {
-    const ext = path.extname(fileName);
-    return `${crypto.randomUUID()}-${fileName.slice(0, 8)}${ext}`;
-  }
-
-  function setNextImagePath(fileName: string): string {
-    const name = setImageFileName(fileName);
-    return `/uploadedImage/${name}`;
-  }
-
-  async function processUploadedImage(imageFile: File) {
-    const __projectRoot = process.cwd();
-    if (
-      !fullFs.existsSync(`${__projectRoot}/public/uploadedImages/`)
-    ) {
-      fs.mkdir(`${__projectRoot}/public/uploadedImages`);
-    }
-    const fsImagePath = `${__projectRoot}/public/uploadedImages/${setImageFileName(
-      imageFile.name
-    )}`;
-    await fs.writeFile(
-      fsImagePath,
-      Buffer.from(await imageFile.arrayBuffer())
-    );
-  }
-
+export async function createPost(formData: FormData) {
   try {
-    const user = await getUser();
-    if (!user) {
+    const formDataResult = await processFormData(formData);
+    if (formDataResult.status === 'error') {
+      return {
+        status: formDataResult.status,
+        message: formDataResult.message,
+      };
+    }
+
+    const {
+      title,
+      content,
+      imageFile,
+      unsplashPhotoId,
+      categories,
+      tags,
+      status,
+    } = formDataResult as PostPublishData;
+
+    const res = await fetch('/api/post', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        content,
+        imageURL: imageFile ? setNextImagePath(imageFile.name) : null,
+        tags,
+        unsplashPhotoId,
+        categories,
+        status,
+        slug: slugify(title),
+      }),
+    });
+
+    if (!res.ok) {
+      throw Error();
+    }
+
+    const data = await res.json();
+
+    return {
+      status: 'ok',
+      //prettier-ignore
+      message: `Success! ${status === 'PUBLISHED' ? 'Post Published' : 'Draft Saved'} 🙌`,
+      data,
+    };
+  } catch (error) {
+    console.error('🚀 ~ createPost ~ error:', error);
+    return {
+      status: 'error',
+      message: 'Something went wrong while creating a post 😔',
+    };
+  }
+}
+
+export async function updatePost(
+  { postId, authorId }: { postId: string; authorId: string },
+  formData: FormData
+) {
+  try {
+    const result = await processFormData(formData);
+    if (result.status === 'error') {
+      return { status: result.status, message: result.message };
+    }
+    const {
+      title,
+      content,
+      imageFile,
+      unsplashPhotoId,
+      categories,
+      tags,
+    } = result as PostDraftData;
+
+    // ensures the user is authenticated and the post belongs to the user
+    const kindeUser = await getUser();
+    if (!kindeUser) {
       return {
         status: 'error',
         message: 'User not found',
       };
     }
-    const dbUser = await db.user.findFirstOrThrow({
-      where: { email: user.email as string },
+    await db.user.findFirstOrThrow({
+      where: { email: kindeUser.email as string },
     });
-    const createdData = await db.post.create({
+
+    const UpdatedPost = await db.post.update({
+      where: { id: postId, AND: { authorId } },
       data: {
         title,
-        ...(content && { content }),
-        ...(status && { status }),
+        content: content ? content : null,
         //prettier-ignore
-        ...(imageFile && {imageURL: setNextImagePath(imageFile.name)}),
-        authorId: dbUser.id,
+        imageURL: imageFile ? setNextImagePath(imageFile.name) : null,
         slug: slugify(title),
-        ...(tags && { tags }),
-        ...(isPublished && { isPublished: true }),
-        ...(unsplashPhotoId && { unsplashPhotoId }),
-        ...(categories && {
-          categories: {
-            connectOrCreate: [
-              ...categories.map((category) => ({
-                where: {
-                  name: category,
-                },
-                create: {
-                  name: category,
-                  slug: slugify(category),
-                },
-              })),
-            ],
-          },
-        }),
+        tags: tags ? tags : [],
+        unsplashPhotoId: unsplashPhotoId ? unsplashPhotoId : null,
+        categories: categories && {
+          connectOrCreate: [
+            ...categories.map((category) => ({
+              where: {
+                name: category,
+              },
+              create: {
+                name: category,
+                slug: slugify(category),
+              },
+            })),
+          ],
+        },
       },
     });
-    console.log('🚀 ~ createPost ~ createdData:', createdData);
     return {
       status: 'ok',
       //prettier-ignore
-      message: `Success! ${status === 'PUBLISHED' ? 'Post Published' : 'Draft Saved'} 🙌`,
-      data: createdData,
+      message: `Success! Draft Saved 👌`,
+      data: UpdatedPost,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      return {
-        status: 'error',
-        message: 'Something went wrong while creating a post 😔',
-      };
-    }
+    console.error('🚀 ~ updatePost ~ error:', error);
+    return {
+      status: 'error',
+      message: 'Something went wrong while updating the post 😔',
+    };
   }
-}
-
-export async function updatePost(postId: string, formData: FormData) {
-  return {
-    status: 'ok',
-    message: 'Post updated successfully',
-    data: { postId, formData },
-  };
 }

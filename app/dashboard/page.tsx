@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScatterChart } from 'lucide-react';
 import PageHeading from '@/components/PageHeading';
+import Link from 'next/link';
 
 export default async function Dashboard() {
   const { getUser } = getKindeServerSession();
@@ -46,7 +47,11 @@ export default async function Dashboard() {
           </CardContent>
           <CardFooter className="flex-col justify-end gap-3 grow items-stretch lg:flex-row lg:items-end lg:justify-between">
             <Button variant={'outline'}>Edit a Post</Button>
-            <Button>Start a New Post</Button>
+            <Button asChild>
+              <Link href="/dashboard/posts/new">
+                Start a New Post
+              </Link>
+            </Button>
           </CardFooter>
         </Card>
         <Card>

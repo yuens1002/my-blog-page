@@ -1,5 +1,5 @@
 import { useFetch } from '@/hooks/useFetch';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 import { UseFetchCategoryPayload } from '@/lib/types';
 
 import {
@@ -14,10 +14,9 @@ import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function CategorySelection() {
-  const [{ selectedCategories }, dispatch] = useNewPostContext();
-  const url = `${process.env.NEXT_PUBLIC_API_ROOT}/categories`;
-  const [categories, isPending, error]: UseFetchCategoryPayload =
-    useFetch(url);
+  const [{ selectedCategories }, dispatch] = usePostContext();
+  const [categories, error, isPending]: UseFetchCategoryPayload =
+    useFetch('/api/categories');
 
   if (error) {
     throw new Error('something went wrong while loading categories');

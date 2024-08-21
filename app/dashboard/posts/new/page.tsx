@@ -1,7 +1,7 @@
 'use client';
 import PageHeading from '@/components/PageHeading';
-import NewPostForm from '@/app/dashboard/posts/new/_components/NewPostForm';
-import { NewPostProvider } from '@/app/dashboard/_hooks/useNewPostContext';
+import NewPostForm from '@/app/dashboard/posts/_components/PostForm';
+import { NewPostProvider } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function CreateNewPostPage() {
   return (

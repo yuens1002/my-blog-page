@@ -1,16 +1,14 @@
 import { Label } from '@/components/ui/label';
-import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useState } from 'react';
 import InputField from '../InputField';
 import { UseFetchCategoryPayload } from '@/lib/types';
 import { useFetch } from '@/hooks/useFetch';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function CreateCategoryInput() {
   // use a transition here
-  const url = `${process.env.NEXT_PUBLIC_API_ROOT}/categories`;
-  const [categories, isPending, error]: UseFetchCategoryPayload =
-    useFetch(url);
+  const [categories, error, isPending]: UseFetchCategoryPayload =
+    useFetch('/api/categories');
 
   if (error) {
     throw new Error('something went wrong while loading categories');
@@ -19,7 +17,7 @@ export default function CreateCategoryInput() {
   const [
     { createdCategories, createCategoryInput: inputValue },
     dispatch,
-  ] = useNewPostContext();
+  ] = usePostContext();
 
   const errorMessages = {
     duplicate:

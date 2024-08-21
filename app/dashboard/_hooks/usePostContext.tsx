@@ -10,15 +10,15 @@ import {
 } from '@/app/dashboard/posts/new/reducer';
 
 // Create a context that holds both state and dispatch
-const NewPostContext = createContext<
+const PostContext = createContext<
   [typeof initialState, React.Dispatch<any>]
 >([initialState, () => null]);
 
 // Custom hook to use the NewPostContext
-export const useNewPostContext = () => useContext(NewPostContext);
+export const usePostContext = () => useContext(PostContext);
 
 // Provider component
-export const NewPostProvider = ({
+export const PostProvider = ({
   children,
 }: {
   children: ReactNode;
@@ -26,8 +26,6 @@ export const NewPostProvider = ({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
-    <NewPostContext value={[state, dispatch]}>
-      {children}
-    </NewPostContext>
+    <PostContext value={[state, dispatch]}>{children}</PostContext>
   );
 };

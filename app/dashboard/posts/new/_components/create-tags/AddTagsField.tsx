@@ -4,11 +4,11 @@ import { useState } from 'react';
 import InputField from '../InputField';
 import BadgeButton from '../BadgeButton';
 import BadgeWindow from '../BadgeWindow';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function AddTagsField() {
   const [{ addedTags, addTagInput: inputValue }, dispatch] =
-    useNewPostContext();
+    usePostContext();
   const errorMessages = {
     duplicate: 'Tag already added, enter a different name',
     empty: 'Enter a tag name',
@@ -20,6 +20,7 @@ export default function AddTagsField() {
     if (!inputValue) {
       setErrorMessage(errorMessages.empty);
       return;
+      ``;
     }
     const normalizedValue = inputValue
       .replace(/\s/g, '')
@@ -63,7 +64,7 @@ export default function AddTagsField() {
         ))}
       </select>
       {/* 
-        - apply for/name/id attributes to satisfy html form input requirements
+        - apply id attribute to satisfy html form input requirements
         - hiding the label from screen readers in favor of the
             label above to describe the add tags intention
       */}
@@ -71,7 +72,7 @@ export default function AddTagsField() {
         Tag Input
       </Label>
       <InputField
-        name="tag-input"
+        id="tag-input"
         useValue={[
           inputValue,
           (value) =>

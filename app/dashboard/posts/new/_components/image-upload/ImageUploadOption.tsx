@@ -8,11 +8,11 @@ import { ImageIcon } from 'lucide-react';
 import { useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import ImageWindow from './ImageWindow';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 /* eslint-disable @next/next/no-img-element */
 export default function FileUpload() {
-  const [{ image }, dispatch] = useNewPostContext();
+  const [{ image }, dispatch] = usePostContext();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {

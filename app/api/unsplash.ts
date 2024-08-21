@@ -25,21 +25,16 @@ async function getUnsplashPhoto(photoId: string) {
         throw new Error(parsedResult.error.toString());
       }
       const { data } = parsedResult;
-      return NextResponse.json(
-        { data },
-        { status: 200, statusText: 'ok' }
-      );
+      return NextResponse.json({ data }, { status: 200 });
     }
   } catch (error) {
     console.error(
       `[${error}] while fetching or processing image from upsplash.`
     );
-    return NextResponse.json(
-      {
-        error: 'Internal Server Error',
-      },
-      { status: 500, statusText: 'Internal Server Error' }
-    );
+    return NextResponse.json({
+      status: 404,
+      error: 'Not Found',
+    });
   }
 }
 

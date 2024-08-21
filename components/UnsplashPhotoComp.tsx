@@ -3,7 +3,6 @@
 import { getUnsplashPhotoWithCache } from '@/app/api/unsplash';
 import { blurHashToDataURL } from '@/lib/blurHashBase64';
 import Image from 'next/image';
-import { NextResponse } from 'next/server';
 
 type UnsplashPhotoCompProps = {
   photoId: string;
@@ -13,25 +12,26 @@ export default async function UnsplashPhotoComp({
   photoId,
 }: UnsplashPhotoCompProps) {
   // refactor this to confirm Response (!ok) type construction
-  const result = await getUnsplashPhotoWithCache(photoId);
-  if (result instanceof NextResponse) {
-    const error: { status: string; message: string } =
-      await result.json();
+  const res = await getUnsplashPhotoWithCache(photoId);
+  console.log('🚀 ~ getUnsplashPhotoWithCache:', res);
+  if (!res.ok) {
     return (
       <div className="relative aspect-video my-4">
         <Image
           fill
           priority
-          src={`https://dummyimage.com/16:9x1080/efefef/999999&text=${error.message
+          src={`https://dummyimage.com/16:9x1080/efefef/999999&text=${res.statusText
             .split(' ')
             .join('+')}`}
-          alt={'error image: ' + error.message}
+          alt={'error image: ' + res.statusText}
         />
       </div>
     );
   }
 
-  const { user, urls, blur_hash, width, height } = result;
+  const {
+    data: { user, urls, blur_hash, width, height },
+  } = await res.json();
   return (
     <>
       <div className="w-full aspect-video my-4 overflow-hidden">

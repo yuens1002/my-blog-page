@@ -4,8 +4,9 @@ import { NextResponse } from 'next/server';
 import { useState, useEffect } from 'react';
 
 export function useFetch<T>(
-  url: string
-): [T | null, boolean, string | null] {
+  url: string,
+  options?: RequestInit
+): [T | null, string | null, boolean] {
   const [data, setData] = useState<T | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +15,7 @@ export function useFetch<T>(
     const fetchData = async () => {
       setIsPending(true);
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, options);
         const { data } = await response.json();
         setData(data);
         setIsPending(false);
@@ -30,5 +31,5 @@ export function useFetch<T>(
 
     fetchData();
   }, [url]);
-  return [data, isPending, error];
+  return [data, error, isPending];
 }

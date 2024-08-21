@@ -1,4 +1,5 @@
 import { UnsplashPhoto } from '@/lib/types';
+import { PostWithRelations } from '@/prisma/generated/zod';
 import { Post } from '@prisma/client';
 
 type InitialStateTypes = {
@@ -10,8 +11,8 @@ type InitialStateTypes = {
   imageOption: 'upload' | 'unsplash';
   photoId: string;
   photoProps: UnsplashPhoto | null;
-  createdPostData: Post | null;
   image: string | null;
+  postData: Post | PostWithRelations | null;
 };
 
 export const initialState: InitialStateTypes = {
@@ -23,7 +24,7 @@ export const initialState: InitialStateTypes = {
   imageOption: 'upload',
   photoId: '',
   photoProps: null,
-  createdPostData: null,
+  postData: null,
   image: null,
 };
 
@@ -59,6 +60,8 @@ export function reducer(
           payload
         ),
       };
+    case 'SET_ADDED_TAGS':
+      return { ...state, addedTags: payload };
     case 'ADD_TO_ADDED_TAGS':
       return { ...state, addedTags: [...state.addedTags, payload] };
     case 'DEL_FROM_ADDED_TAGS':
@@ -76,8 +79,8 @@ export function reducer(
       return { ...state, photoId: payload };
     case 'SET_PHOTO_PROPS':
       return { ...state, photoProps: payload };
-    case 'SET_CREATED_POST_DATA':
-      return { ...state, createdPostData: payload };
+    case 'SET_POST_DATA':
+      return { ...state, postData: payload };
     case 'SET_IMAGE':
       return { ...state, image: payload };
     case 'RESET':

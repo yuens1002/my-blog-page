@@ -1,4 +1,7 @@
-import { CreatePostData } from '@/app/dashboard/_actions/managePosts';
+import {
+  PostWithRelations,
+  StatusType,
+} from '@/prisma/generated/zod';
 import { Category, Post } from '@prisma/client';
 import { z } from 'zod';
 
@@ -16,8 +19,8 @@ export type dummyPost = {
 
 export type UseFetchCategoryPayload = [
   data: Category[] | null,
-  isPending: boolean,
-  error: string | null
+  error: string | null,
+  isPending: boolean
 ];
 
 export const createPhotoSchema = z.object({
@@ -44,4 +47,17 @@ export type InitialFormState = {
   message: string | Record<string, string[]>;
   status: string;
   data?: Post;
+};
+
+export type FormSubmitAction = 'PUBLISH' | 'DRAFT' | 'UPDATE';
+
+export type PostRequestBody = {
+  title: string;
+  content: string;
+  imageURL: string | null;
+  tags: string[];
+  unsplashPhotoId: string | null;
+  categories: string[];
+  status: StatusType;
+  slug: string;
 };

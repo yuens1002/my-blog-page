@@ -1,5 +1,7 @@
+'use client';
 import Loader from '@/components/Loader';
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
+import { PostProvider } from '@/app/dashboard/_hooks/usePostContext';
 
 type PostLayoutProps = {
   children: React.ReactNode;
@@ -7,8 +9,10 @@ type PostLayoutProps = {
 
 export default function PostLayout({ children }: PostLayoutProps) {
   return (
-    <section className="lg:container">
-      <Suspense fallback={<Loader />}>{children}</Suspense>
-    </section>
+    <PostProvider>
+      <section className="lg:container">
+        <Suspense fallback={<Loader />}>{children}</Suspense>
+      </section>
+    </PostProvider>
   );
 }

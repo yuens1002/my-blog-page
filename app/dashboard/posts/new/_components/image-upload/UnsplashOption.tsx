@@ -8,10 +8,10 @@ import Loader from '@/components/Loader';
 import { cn } from '@/lib/utils';
 import PhotoPreview from './PhotoPreview';
 import ImageWindow from './ImageWindow';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function UnsplashOption() {
-  const [{ photoId, photoProps }, dispatch] = useNewPostContext();
+  const [{ photoId, photoProps }, dispatch] = usePostContext();
   const [error, setError] = useState<string | null>(null);
 
   const [isPending, startTransition] = useTransition();
@@ -37,7 +37,7 @@ export default function UnsplashOption() {
     startTransition(async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_ROOT}/unsplash/photo?photoid=${sanitizedId}`
+          `/api/unsplash/photo?photoid=${sanitizedId}`
         );
         if (!res.ok) throw new Error('No photo found');
         const { data } = await res.json();

@@ -1,11 +1,11 @@
 import { type MouseEvent } from 'react';
 import BadgeWindow from '../BadgeWindow';
 import BadgeButton from '../BadgeButton';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function AddedCategories() {
   const [{ selectedCategories, createdCategories }, dispatch] =
-    useNewPostContext();
+    usePostContext();
   const categories = [...selectedCategories, ...createdCategories];
 
   function handleClick(e: MouseEvent<HTMLButtonElement>) {

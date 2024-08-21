@@ -1,24 +1,26 @@
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, FormEvent, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 
 import { Textarea } from '@/components/ui/textarea';
-import ImageOptionTabs from './image-upload/ImageOptionTabs';
-import CategoryField from './category-field/CategoryField';
+import ImageOptionTabs from '../new/_components/image-upload/ImageOptionTabs';
+import CategoryField from '../new/_components/category-field/CategoryField';
 import {
   createPost,
+  PostResult,
   updatePost,
 } from '@/app/dashboard/_actions/managePosts';
-import UnsplashOption from './image-upload/UnsplashOption';
-import ImageUploadOption from './image-upload/ImageUploadOption';
-import { InitialFormState } from '@/lib/types';
+import UnsplashOption from '../new/_components/image-upload/UnsplashOption';
+import ImageUploadOption from '../new/_components/image-upload/ImageUploadOption';
+import { FormSubmitAction, InitialFormState } from '@/lib/types';
 import SubmitButton from '@/components/SubmitButton';
-import { Post } from '@prisma/client';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
-import AddTagsField from './create-tags/AddTagsField';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
+import AddTagsField from '../new/_components/create-tags/AddTagsField';
+import type { PostWithRelations } from '@/prisma/generated/zod';
 
-export default function NewPostForm() {
+export default function PostForm() {
+  const { toast } = useToast();
   const [
     {
       createCategoryInput,
@@ -26,21 +28,19 @@ export default function NewPostForm() {
       imageOption,
       photoId,
       photoProps,
+      postData,
     },
     dispatch,
-  ] = useNewPostContext();
+  ] = usePostContext();
+
   const titleInput = useRef<HTMLInputElement>(null);
   const contentInput = useRef<HTMLTextAreaElement>(null);
 
-  const [createdPostData, setCreatedPostData] = useState<Post | null>(
-    null
-  );
   //prettier ignore
   const [submitAction, setSubmitAction] = useState<
-    'PUBLISH' | 'DRAFT' | 'UPDATE' | ''
+    FormSubmitAction | ''
   >('');
   const [isPending, setIsPending] = useState(false);
-  const { toast } = useToast();
 
   const resetForm = () => {
     dispatch({ type: 'RESET' });
@@ -124,7 +124,7 @@ export default function NewPostForm() {
     switch (submitAction) {
       case 'PUBLISH':
         formData.append('isPublished', true.toString());
-        formData.append('status', 'PUBLISH');
+        formData.append('status', 'PUBLISHED');
         submitForm(createPost);
         break;
       case 'DRAFT':
@@ -132,12 +132,13 @@ export default function NewPostForm() {
         submitForm(createPost);
         break;
       case 'UPDATE':
-        if (createdPostData?.id) {
-          const updatePostWithId = updatePost.bind(
-            null,
-            createdPostData.id
-          );
-          submitForm(updatePostWithId);
+        formData.append('status', 'DRAFT');
+        if (postData) {
+          const updatePostWithPostData = updatePost.bind(null, {
+            postId: postData.id,
+            authorId: postData.authorId,
+          });
+          submitForm(updatePostWithPostData);
         }
         break;
       default:
@@ -145,7 +146,7 @@ export default function NewPostForm() {
     }
 
     async function submitForm(
-      formAction: (formData: FormData) => Promise<any>
+      formAction: (formData: FormData) => Promise<PostResult>
     ) {
       const { status, message, data } = (await formAction(
         formData
@@ -162,7 +163,7 @@ export default function NewPostForm() {
           if (submitAction === 'PUBLISH') {
             resetForm();
           } else if (data) {
-            setCreatedPostData(data);
+            dispatch({ type: 'SET_POST_DATA', payload: data });
           }
         }
       } else {
@@ -183,6 +184,7 @@ export default function NewPostForm() {
           Title*
         </Label>
         <Input
+          defaultValue={postData?.title}
           ref={titleInput}
           placeholder="ie. The Art of Peace"
           type="text"
@@ -198,6 +200,7 @@ export default function NewPostForm() {
           Content
         </Label>
         <Textarea
+          defaultValue={postData?.content ?? undefined}
           ref={contentInput}
           placeholder="10,000 characters limit"
           id="content"
@@ -234,13 +237,14 @@ export default function NewPostForm() {
                     submitAction === 'UPDATE')
                 }
                 onClick={() =>
-                  createdPostData
+                  postData
                     ? setSubmitAction('UPDATE')
                     : setSubmitAction('DRAFT')
                 }
                 variant="outline"
               >
-                {createdPostData ? 'Update' : 'Save'} Draft
+                {postData ? 'Update' : 'Save'}{' '}
+                {postData ? 'Edits' : 'Draft'}
               </SubmitButton>
               <SubmitButton
                 aria-disabled={isPending}

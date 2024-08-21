@@ -3,7 +3,7 @@
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useNewPostContext } from '@/app/dashboard/_hooks/useNewPostContext';
+import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 type ImageOptionTabsProps = {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ export default function ImageOptionTabs({
   children,
 }: ImageOptionTabsProps) {
   const [{ imageOption, photoProps, image }, dispatch] =
-    useNewPostContext();
+    usePostContext();
   return (
     <div>
       <Label
