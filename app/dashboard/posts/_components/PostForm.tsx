@@ -17,7 +17,6 @@ import { FormSubmitAction, InitialFormState } from '@/lib/types';
 import SubmitButton from '@/components/SubmitButton';
 import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 import AddTagsField from '../new/_components/create-tags/AddTagsField';
-import type { PostWithRelations } from '@/prisma/generated/zod';
 
 export default function PostForm() {
   const { toast } = useToast();
@@ -243,8 +242,7 @@ export default function PostForm() {
                 }
                 variant="outline"
               >
-                {postData ? 'Update' : 'Save'}{' '}
-                {postData ? 'Edits' : 'Draft'}
+                Save {postData ? 'Edits' : 'Draft'}
               </SubmitButton>
               <SubmitButton
                 aria-disabled={isPending}

@@ -1,6 +1,7 @@
 import { UnsplashPhoto } from '@/lib/types';
 import { PostWithRelations } from '@/prisma/generated/zod';
 import { Post } from '@prisma/client';
+import { createRef } from 'react';
 
 type InitialStateTypes = {
   selectedCategories: string[];
@@ -13,6 +14,7 @@ type InitialStateTypes = {
   photoProps: UnsplashPhoto | null;
   image: string | null;
   postData: Post | PostWithRelations | null;
+  previewUnsplashBtnRef: React.RefObject<HTMLButtonElement | null> | null;
 };
 
 export const initialState: InitialStateTypes = {
@@ -26,6 +28,7 @@ export const initialState: InitialStateTypes = {
   photoProps: null,
   postData: null,
   image: null,
+  previewUnsplashBtnRef: null,
 };
 
 function DeleteOneFromArr(arr: string[], item: string) {
@@ -83,6 +86,8 @@ export function reducer(
       return { ...state, postData: payload };
     case 'SET_IMAGE':
       return { ...state, image: payload };
+    case 'SET_PREVIEW_UNSPLASH_BTN_REF':
+      return { ...state, previewUnsplashBtnRef: payload };
     case 'RESET':
       return initialState;
     default:

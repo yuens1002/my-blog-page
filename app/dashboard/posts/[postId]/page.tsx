@@ -6,22 +6,22 @@ import NewPostForm from '@/app/dashboard/posts/_components/PostForm';
 import { useFetch } from '@/hooks/useFetch';
 import { PostWithRelations } from '@/prisma/generated/zod';
 import Loader from '@/components/Loader';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { usePostContext } from '../../_hooks/usePostContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-type EditPostPageProps = { params: { slug: string } };
+type EditPostPageProps = { params: { postId: string } };
 
 export default function EditPostPage({
-  params: { slug },
+  params: { postId },
 }: EditPostPageProps) {
   const [, dispatch] = usePostContext();
   const headers = new Headers();
-  headers.append('slug', slug);
+  headers.append('postId', postId);
   headers.append('include', 'categories');
   const [post, error, isPending] = useFetch<PostWithRelations>(
-    '/api/post/',
+    '/api/post',
     {
       headers,
     }
@@ -29,7 +29,7 @@ export default function EditPostPage({
   if (error) {
     throw new Error('Could not fetch post');
   }
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (post) {
       dispatch({
         type: 'SET_SELECTED_CATEGORIES',
@@ -37,6 +37,15 @@ export default function EditPostPage({
       });
       dispatch({ type: 'SET_ADDED_TAGS', payload: post.tags });
       dispatch({ type: 'SET_POST_DATA', payload: post });
+      if (post.unsplashPhotoId) {
+        dispatch({
+          type: 'SET_PHOTO_ID',
+          payload: post.unsplashPhotoId,
+        });
+        dispatch({ type: 'SET_IMAGE_OPTION', payload: 'unsplash' });
+      } else if (post.imageURL) {
+        dispatch({ type: 'SET_IMAGE', payload: post.imageURL });
+      }
     }
     return () => {
       dispatch({ type: 'RESET' });
@@ -46,7 +55,7 @@ export default function EditPostPage({
     <div className="relative px-4 md:px-8 lg:px-0">
       <header className="flex justify-between items-center gap-4 mb-12">
         <PageHeading>Edit a Post</PageHeading>
-        <Button asChild>
+        <Button asChild onClick={() => dispatch({ type: 'RESET' })}>
           <Link href="/dashboard/posts/new">New Post</Link>
         </Button>
       </header>

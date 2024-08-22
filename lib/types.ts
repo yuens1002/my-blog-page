@@ -60,4 +60,5 @@ export type PostRequestBody = {
   categories: string[];
   status: StatusType;
   slug: string;
+  authorId: string;
 };

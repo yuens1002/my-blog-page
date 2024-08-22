@@ -1,20 +1,19 @@
 import { headers } from 'next/headers';
 import db from '@/db/prismaDb';
 import { NextResponse } from 'next/server';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { PostRequestBody } from '@/lib/types';
 import { keysToObject } from '@/lib/utils';
 
 export async function GET() {
   const headerList = headers();
-  const slug = headerList.get('slug');
+  const postId = headerList.get('postId');
   const includeHeader = headerList.get('include');
 
-  if (!slug) throw new Error('Slug not found');
+  if (!postId) throw new Error('Post not found');
   try {
     const data = await db.post.findFirstOrThrow({
       where: {
-        slug,
+        id: postId,
       },
       ...(includeHeader && {
         include: keysToObject(includeHeader.split(', ')),
@@ -32,18 +31,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { getUser } = getKindeServerSession();
-
   try {
-    const kindeUser = await getUser();
-    if (!kindeUser) {
-      throw Error('User not found from kinde getUser function');
-    }
-
-    const dbUser = await db.user.findFirstOrThrow({
-      where: { email: kindeUser.email as string },
-    });
-
     const {
       title,
       content,
@@ -53,6 +41,7 @@ export async function POST(request: Request) {
       tags,
       unsplashPhotoId,
       categories,
+      authorId,
     }: PostRequestBody = await request.json();
 
     const data = await db.post.create({
@@ -61,7 +50,7 @@ export async function POST(request: Request) {
         ...(content && { content }),
         ...(status && { status }),
         ...(imageURL && { imageURL }),
-        authorId: dbUser.id,
+        authorId,
         slug,
         ...(tags && { tags }),
         isPublished: true,

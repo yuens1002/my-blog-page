@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageIcon, MessageSquareWarningIcon } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import Loader from '@/components/Loader';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ import ImageWindow from './ImageWindow';
 import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 
 export default function UnsplashOption() {
+  const ref = useRef<HTMLButtonElement | null>(null);
   const [{ photoId, photoProps }, dispatch] = usePostContext();
   const [error, setError] = useState<string | null>(null);
 
@@ -47,13 +48,20 @@ export default function UnsplashOption() {
           type: 'SET_PHOTO_PROPS',
           payload: { ...otherRes, urls: newUrls },
         });
-        // ensure the photoId input field is valid before submitting the form
-        dispatch({ type: 'SET_PHOTO_ID', payload: sanitizedId });
+        if (!photoId) {
+          // ensure the photoId input field is valid before submitting the form
+          dispatch({ type: 'SET_PHOTO_ID', payload: sanitizedId });
+        }
       } catch (err) {
         if (err instanceof Error) setError(err.message);
       }
     });
   };
+
+  // used for edit post page when the photoId is already set
+  useEffect(() => {
+    if (photoId) handlePreview();
+  }, []);
 
   return (
     <div>
@@ -93,6 +101,7 @@ export default function UnsplashOption() {
           </Button>
         ) : (
           <Button
+            ref={ref}
             type="button"
             className="p-6 rounded-l-none rounded-br-none"
             onClick={handlePreview}

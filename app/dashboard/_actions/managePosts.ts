@@ -4,10 +4,7 @@ import db from '@/db/prismaDb';
 import { z } from 'zod';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { slugify } from '@/lib/utils';
-import {
-  PostWithRelations,
-  StatusType,
-} from '@/prisma/generated/zod';
+import { StatusType } from '@/prisma/generated/zod';
 import {
   processUploadedImage,
   setNextImagePath,
@@ -15,9 +12,9 @@ import {
 import { revalidatePath } from 'next/cache';
 import { Post } from '@prisma/client';
 
-revalidatePath('/dashboard/posts/edit/[postId]', 'page');
+revalidatePath('/dashboard/posts/[postId]', 'page');
 
-const MAX_FILE_SIZE = 800000;
+const MAX_FILE_SIZE = 8000000;
 console.log('🚀 ~ MAX_FILE_SIZE:', MAX_FILE_SIZE);
 const ACCEPTED_IMAGE_TYPES = [
   'image/jpeg',
@@ -35,7 +32,7 @@ const imageSchema = z
   )
   .refine(
     (file) => file.size <= MAX_FILE_SIZE,
-    `Max file size is ${MAX_FILE_SIZE / 100000}MB.`
+    `Max file size is ${MAX_FILE_SIZE / 1000000}MB.`
   );
 
 const { getUser } = getKindeServerSession();
@@ -92,7 +89,7 @@ async function processFormData(
       formData.delete('imageFile');
   }
 
-  // take out the imageFile input if none is selected
+  // take out tags if none is added
   const tagsData = formData.getAll('tags');
   if (tagsData.length === 0) {
     formData.delete('tags');
@@ -154,7 +151,6 @@ export async function createPost(formData: FormData) {
         message: formDataResult.message,
       };
     }
-
     const {
       title,
       content,
@@ -165,7 +161,17 @@ export async function createPost(formData: FormData) {
       status,
     } = formDataResult as PostPublishData;
 
-    const res = await fetch('/api/post', {
+    const { getUser } = getKindeServerSession();
+    const kindeUser = await getUser();
+    if (!kindeUser) {
+      throw Error('User not found from kinde getUser function');
+    }
+
+    const dbUser = await db.user.findFirstOrThrow({
+      where: { email: kindeUser.email as string },
+    });
+
+    const res = await fetch(`${process.env.API_ROOT}/post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -173,6 +179,7 @@ export async function createPost(formData: FormData) {
       body: JSON.stringify({
         title,
         content,
+        authorId: dbUser.id,
         imageURL: imageFile ? setNextImagePath(imageFile.name) : null,
         tags,
         unsplashPhotoId,
@@ -186,7 +193,7 @@ export async function createPost(formData: FormData) {
       throw Error();
     }
 
-    const data = await res.json();
+    const { data } = await res.json();
 
     return {
       status: 'ok',
@@ -261,14 +268,14 @@ export async function updatePost(
     return {
       status: 'ok',
       //prettier-ignore
-      message: `Success! Draft Saved 👌`,
+      message: `Success! Changes Saved 👌`,
       data: UpdatedPost,
     };
   } catch (error) {
     console.error('🚀 ~ updatePost ~ error:', error);
     return {
       status: 'error',
-      message: 'Something went wrong while updating the post 😔',
+      message: "Can't save changes, try again later 😔",
     };
   }
 }
