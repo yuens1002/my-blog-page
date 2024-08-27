@@ -1,4 +1,10 @@
-import { useState, useRef, FormEvent, useEffect } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  type FormEvent,
+  use,
+} from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
@@ -13,27 +19,37 @@ import {
 } from '@/app/dashboard/_actions/managePosts';
 import UnsplashOption from '../new/_components/image-upload/UnsplashOption';
 import ImageUploadOption from '../new/_components/image-upload/ImageUploadOption';
-import { FormSubmitAction, InitialFormState } from '@/lib/types';
+import { FormSubmitAction } from '@/lib/types';
 import SubmitButton from '@/components/SubmitButton';
 import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';
 import AddTagsField from '../new/_components/create-tags/AddTagsField';
+import { Category, Post } from '@prisma/client';
+import { useRouter } from 'next/navigation';
 
-export default function PostForm() {
+type PostFormProps = {
+  postData?: Post & { categories: Category[] };
+};
+
+export default function PostForm({ postData }: PostFormProps) {
+  const route = useRouter();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [
     {
+      title,
+      content,
       createCategoryInput,
       addTagInput,
       imageOption,
       photoId,
       photoProps,
-      postData,
     },
     dispatch,
   ] = usePostContext();
 
-  const titleInput = useRef<HTMLInputElement>(null);
-  const contentInput = useRef<HTMLTextAreaElement>(null);
+  const [formResult, setFormResult] = useState<
+    (Post & { categories: Category[] }) | null
+  >(null);
 
   //prettier ignore
   const [submitAction, setSubmitAction] = useState<
@@ -44,8 +60,8 @@ export default function PostForm() {
   const resetForm = () => {
     dispatch({ type: 'RESET' });
     setSubmitAction('');
-    titleInput.current && (titleInput.current.value = '');
-    contentInput.current && (contentInput.current.value = '');
+    setFormResult(null);
+    fileInputRef.current?.value && (fileInputRef.current.value = '');
   };
 
   const errors = {
@@ -116,28 +132,65 @@ export default function PostForm() {
       handleInputError();
       return;
     }
+    const shouldDeleteImage = Boolean(
+      (formData.get('imageFile') instanceof File ||
+        photoId ||
+        // accounts for when the user wants to delete an uploaded image
+        !fileInputRef?.current?.value) &&
+        // accounts for when an image had been uploaded
+        formResult?.imageURL
+    );
 
-    console.log('🚀 ~ NewPostForm ~ formData:', formData);
-    console.log('🚀 ~ NewPostForm ~ submitAction:', submitAction);
+    console.log(
+      '🚀 ~ PostForm ~ formData ~ imageURL:',
+      formData.get('imageURL')
+    );
+    console.log('🚀 ~ PostForm ~ submitAction:', submitAction);
 
     switch (submitAction) {
       case 'PUBLISH':
-        formData.append('isPublished', true.toString());
         formData.append('status', 'PUBLISHED');
-        submitForm(createPost);
+        if (formResult) {
+          console.log(
+            '🚀 ~ handleFormSubmit ~ shouldDeleteImage:',
+            shouldDeleteImage
+          );
+          const updatePostWithFormResult = updatePost.bind(null, {
+            postId: formResult.id,
+            authorId: formResult.authorId,
+            imageURL: shouldDeleteImage ? formResult.imageURL : null,
+            prevStatus: formResult.status,
+          });
+          submitForm(updatePostWithFormResult);
+        } else submitForm(createPost);
         break;
       case 'DRAFT':
         formData.append('status', 'DRAFT');
         submitForm(createPost);
         break;
       case 'UPDATE':
-        formData.append('status', 'DRAFT');
-        if (postData) {
-          const updatePostWithPostData = updatePost.bind(null, {
-            postId: postData.id,
-            authorId: postData.authorId,
+        // update can be both a draft or a published post
+        // draft and published posts use different zod schemas for validation
+        const status = formResult?.status;
+        formData.append('status', status ?? 'DRAFT');
+        // deleting an already uploaded image should happen if:
+        // a. the user chooses to upload a new image
+        // b. the user chooses to provide an unsplash photoId
+        // c. the user chooses to undo the uploaded image and left the file input empty
+        // c. if a, b, or c is true and imageURL exists, it means an image had been uploaded and it needs to be deleted
+
+        console.log(
+          '🚀 ~ handleFormSubmit ~ shouldDeleteImage:',
+          shouldDeleteImage
+        );
+        if (formResult) {
+          const updatePostWithFormResult = updatePost.bind(null, {
+            postId: formResult.id,
+            authorId: formResult.authorId,
+            imageURL: shouldDeleteImage ? formResult.imageURL : null,
+            prevStatus: formResult.status,
           });
-          submitForm(updatePostWithPostData);
+          submitForm(updatePostWithFormResult);
         }
         break;
       default:
@@ -147,34 +200,38 @@ export default function PostForm() {
     async function submitForm(
       formAction: (formData: FormData) => Promise<PostResult>
     ) {
-      const { status, message, data } = (await formAction(
-        formData
-      )) as InitialFormState;
+      const { status, message, data } = await formAction(formData);
       console.log(
-        '🚀 ~ useEffect ~ message, status:',
+        '🚀 ~ submitForm ~ message, status:',
         message,
         status
       );
       setIsPending(false);
       if (typeof message === 'string') {
         toast({ description: message });
-        if (status === 'ok') {
+        if (status === 'ok' && data) {
           if (submitAction === 'PUBLISH') {
             resetForm();
-          } else if (data) {
-            dispatch({ type: 'SET_POST_DATA', payload: data });
+          } else {
+            route.push(`/dashboard/posts/${data.id}`);
           }
         }
       } else {
         Object.entries(message).forEach(([key, value]) => {
-          toast({
-            title: key,
-            description: value.join(', '),
-          });
+          if (value instanceof Array && value.length > 0) {
+            toast({
+              title: key,
+              description: value.join(', '),
+            });
+          }
         });
       }
     }
   };
+
+  useEffect(() => {
+    postData && setFormResult(postData);
+  }, [postData]);
 
   return (
     <form className="block space-y-10" onSubmit={handleFormSubmit}>
@@ -183,8 +240,7 @@ export default function PostForm() {
           Title*
         </Label>
         <Input
-          defaultValue={postData?.title}
-          ref={titleInput}
+          value={title}
           placeholder="ie. The Art of Peace"
           type="text"
           id="title"
@@ -192,6 +248,12 @@ export default function PostForm() {
           maxLength={256}
           minLength={10}
           required
+          onChange={(e) =>
+            dispatch({
+              type: 'SET_STATE',
+              payload: { stateProp: 'title', value: e.target.value },
+            })
+          }
         />
       </div>
       <div className="space-y-2">
@@ -199,13 +261,21 @@ export default function PostForm() {
           Content
         </Label>
         <Textarea
-          defaultValue={postData?.content ?? undefined}
-          ref={contentInput}
+          value={content}
           placeholder="10,000 characters limit"
           id="content"
           name="content"
           maxLength={10000}
           minLength={20}
+          onChange={(e) =>
+            dispatch({
+              type: 'SET_STATE',
+              payload: {
+                stateProp: 'content',
+                value: e.target.value,
+              },
+            })
+          }
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
@@ -219,7 +289,7 @@ export default function PostForm() {
         </div>
         <ImageOptionTabs>
           {imageOption === 'upload' ? (
-            <ImageUploadOption />
+            <ImageUploadOption ref={fileInputRef} />
           ) : (
             <UnsplashOption />
           )}
@@ -236,21 +306,24 @@ export default function PostForm() {
                     submitAction === 'UPDATE')
                 }
                 onClick={() =>
-                  postData
+                  formResult
                     ? setSubmitAction('UPDATE')
                     : setSubmitAction('DRAFT')
                 }
                 variant="outline"
               >
-                Save {postData ? 'Edits' : 'Draft'}
+                Save {formResult ? 'Changes' : 'Draft'}
               </SubmitButton>
-              <SubmitButton
-                aria-disabled={isPending}
-                showLoader={isPending && submitAction === 'PUBLISH'}
-                onClick={() => setSubmitAction('PUBLISH')}
-              >
-                Publish
-              </SubmitButton>
+              {formResult &&
+              formResult.status === 'PUBLISHED' ? null : (
+                <SubmitButton
+                  aria-disabled={isPending}
+                  showLoader={isPending && submitAction === 'PUBLISH'}
+                  onClick={() => setSubmitAction('PUBLISH')}
+                >
+                  Publish
+                </SubmitButton>
+              )}
             </div>
           </div>
         </div>

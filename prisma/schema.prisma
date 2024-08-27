@@ -38,13 +38,14 @@ model Post {
   unsplashPhotoId String?
   author          User       @relation(fields: [authorId], references: [id])
   authorId        String
-  isPublished     Boolean    @default(false)
+  isActive        Boolean    @default(false)
   stats           Stats?
   categories      Category[]
   slug            String     @unique
   tags            String[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+  publishedAt     DateTime?
   status          Status     @default(DRAFT)
 }
 
@@ -72,5 +73,4 @@ enum Role {
 enum Status {
   PUBLISHED
   DRAFT
-  INACTIVE
 }

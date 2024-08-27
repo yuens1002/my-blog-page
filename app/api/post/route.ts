@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 import db from '@/db/prismaDb';
 import { NextResponse } from 'next/server';
-import { PostRequestBody } from '@/lib/types';
-import { keysToObject } from '@/lib/utils';
+import type { PatchRequestBody, PostRequestBody } from '@/lib/types';
+import { keysToObject, slugify } from '@/lib/utils';
 
 export async function GET() {
   const headerList = headers();
@@ -30,6 +30,44 @@ export async function GET() {
   }
 }
 
+export async function PATCH(request: Request) {
+  const { postId, authorId, categories, ...rest }: PatchRequestBody =
+    await request.json();
+  console.log('🚀 ~ PATCH ~ rest:', rest);
+  try {
+    const data = await db.post.update({
+      where: { id: postId, AND: { authorId } },
+      data: {
+        categories: {
+          set: [],
+          ...(categories && {
+            connectOrCreate: categories.map((category) => ({
+              where: {
+                name: category,
+              },
+              create: {
+                name: category,
+                slug: slugify(category),
+              },
+            })),
+          }),
+        },
+        ...rest,
+      },
+      include: {
+        categories: true,
+      },
+    });
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error(error);
+    return new NextResponse(null, {
+      status: 500,
+      statusText: 'An error occurred while updating the post',
+    });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const {
@@ -52,8 +90,10 @@ export async function POST(request: Request) {
         ...(imageURL && { imageURL }),
         authorId,
         slug,
+        ...(status === 'PUBLISHED' && { isActive: true }),
+        ...(status === 'PUBLISHED' && { publishedAt: new Date() }),
         ...(tags && { tags }),
-        isPublished: true,
+        ...(status === 'PUBLISHED' && { status }),
         ...(unsplashPhotoId && { unsplashPhotoId }),
         ...(categories && {
           categories: {
@@ -64,7 +104,7 @@ export async function POST(request: Request) {
                 },
                 create: {
                   name: category,
-                  slug: slug,
+                  slug: slugify(category),
                 },
               })),
             ],

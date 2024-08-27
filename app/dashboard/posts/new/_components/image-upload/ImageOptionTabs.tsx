@@ -1,5 +1,3 @@
-'use client';
-
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,7 +18,8 @@ export default function ImageOptionTabs({
         htmlFor={
           imageOption === 'upload' ? 'imageFile' : 'unsplashPhotoId'
         }
-        className="text-lg block pb-2"
+        /* noticed a strange mouse click event that triggers the file field */
+        className="text-lg block pb-2 pointer-events-none"
       >
         Choose an Image Option
       </Label>
@@ -33,8 +32,11 @@ export default function ImageOptionTabs({
               '!bg-transparent text-primary border border-r-0 border-primary/20 cursor-default pointer-events-none'
           )}
           size="sm"
-          onClick={() => {
-            dispatch({ type: 'SET_IMAGE_OPTION', payload: 'upload' });
+          onClick={(e) => {
+            dispatch({
+              type: 'SET_STATE',
+              payload: { stateProp: 'imageOption', value: 'upload' },
+            });
           }}
           disabled={!!photoProps}
           tabIndex={imageOption === 'upload' ? -1 : 0}
@@ -49,10 +51,13 @@ export default function ImageOptionTabs({
               '!bg-transparent text-primary border border-l-0 border-primary/20 cursor-default pointer-events-none'
           )}
           size="sm"
-          onClick={() => {
+          onClick={(e) => {
             dispatch({
-              type: 'SET_IMAGE_OPTION',
-              payload: 'unsplash',
+              type: 'SET_STATE',
+              payload: {
+                stateProp: 'imageOption',
+                value: 'unsplash',
+              },
             });
           }}
           disabled={!!image}

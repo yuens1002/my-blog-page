@@ -30,8 +30,11 @@ export default function CategorySelection() {
         value={selectedCategories}
         onChange={(selectedVal) =>
           dispatch({
-            type: 'SET_SELECTED_CATEGORIES',
-            payload: selectedVal,
+            type: 'SET_STATE',
+            payload: {
+              stateProp: 'selectedCategories',
+              value: selectedVal,
+            },
           })
         }
         multiple

@@ -30,7 +30,10 @@ export default function AddTagsField() {
       return;
     }
     dispatch({ type: 'ADD_TO_ADDED_TAGS', payload: normalizedValue });
-    dispatch({ type: 'SET_ADD_TAG_INPUT', payload: '' });
+    dispatch({
+      type: 'SET_STATE',
+      payload: { stateProp: 'addTagInput', value: '' },
+    });
   }
   function handleClick(e: MouseEvent<HTMLButtonElement>) {
     const TagNameToDelete = e.currentTarget.getAttribute(
@@ -77,8 +80,8 @@ export default function AddTagsField() {
           inputValue,
           (value) =>
             dispatch({
-              type: 'SET_ADD_TAG_INPUT',
-              payload: value,
+              type: 'SET_STATE',
+              payload: { stateProp: 'addTagInput', value },
             }),
         ]}
         handleInput={handleInput}

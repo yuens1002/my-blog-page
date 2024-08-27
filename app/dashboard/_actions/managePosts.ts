@@ -6,13 +6,15 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { slugify } from '@/lib/utils';
 import { StatusType } from '@/prisma/generated/zod';
 import {
+  deleteUploadedImage,
   processUploadedImage,
-  setNextImagePath,
 } from '@/lib/processImageFile';
-import { revalidatePath } from 'next/cache';
-import { Post } from '@prisma/client';
+// import { revalidatePath } from 'next/cache';
+import { Category, Post } from '@prisma/client';
+import PostError, { handleError } from '@/lib/processPostError';
+import { FormDataObject } from '@/lib/types';
 
-revalidatePath('/dashboard/posts/[postId]', 'page');
+// revalidatePath('/dashboard/posts/[postId]', 'page');
 
 const MAX_FILE_SIZE = 8000000;
 console.log('🚀 ~ MAX_FILE_SIZE:', MAX_FILE_SIZE);
@@ -31,7 +33,7 @@ const imageSchema = z
     'Only .jpg, .jpeg, .png and .webp files are accepted.'
   )
   .refine(
-    (file) => file.size <= MAX_FILE_SIZE,
+    (file) => file.size <= MAX_FILE_SIZE && file.size > 0,
     `Max file size is ${MAX_FILE_SIZE / 1000000}MB.`
   );
 
@@ -44,17 +46,28 @@ const PostPublishSchema = z
   .object({
     title: z.string().min(10).max(256),
     content: z.string().min(20).max(10000),
-    publishedAt: z.date().optional(),
-    isPublished: z.coerce.boolean().optional(),
     imageFile: imageSchema.optional(),
-    unsplashPhotoId: z.string().optional(),
+    imageURL: z
+      .string({
+        message: 'Provide an image URL',
+      })
+      .optional(),
+    unsplashPhotoId: z
+      .string({
+        message:
+          'A valid unsplash photo id should be 11 characters long.',
+      })
+      .optional(),
     categories: z.array(z.string()).nonempty(),
     tags: z.array(z.string()).optional(),
     status: z.custom<StatusType>(),
   })
   .refine(
-    (data) => data.imageFile || data.unsplashPhotoId,
-    'Upload an image or provide an unsplash photo id.'
+    (data) => data.imageFile || data.unsplashPhotoId || data.imageURL,
+    {
+      message: 'Provide an image file or an unsplash photo id.',
+      path: ['imageFile', 'unsplashPhotoId', 'imageURL'],
+    }
   );
 
 const PostDraftSchema = z.object({
@@ -64,24 +77,18 @@ const PostDraftSchema = z.object({
   unsplashPhotoId: z.string().optional(),
   categories: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
+  status: z.custom<StatusType>(),
 });
-
-type FormDataObject = Record<
-  string,
-  string | File | (File | string)[]
->;
 
 export type PostResult = {
   status: string;
   message: string | FormDataObject;
-  data?: Post;
+  data?: Post & { categories: Category[] };
 };
 
-async function processFormData(
+function processFormData(
   formData: FormData
-): Promise<
-  (PostPublishData & PostDraftData) | Omit<PostResult, 'data'>
-> {
+): PostPublishData | PostDraftData {
   // take out the imageFile input if none is selected
   const imageFileData = formData.get('imageFile');
   if (imageFileData && imageFileData instanceof File) {
@@ -122,49 +129,49 @@ async function processFormData(
       result = PostDraftSchema.safeParse(formDataObject);
       break;
     default:
-      console.error('Invalid status type');
-      return {
-        status: 'error',
+      throw new PostError({
+        type: 'text',
         message: 'Invalid post status requested. 🤔',
-      };
+      });
   }
 
   if (!result.success) {
-    console.error(result.error.formErrors.fieldErrors);
-    return {
-      status: 'error',
+    console.log(
+      '🚀 ~ result.error.formErrors',
+      result.error.formErrors
+    );
+    throw new PostError({
+      type: 'object',
       message: result.error.formErrors.fieldErrors,
-    };
+    });
   }
 
-  result.data.imageFile &&
-    (await processUploadedImage(result.data.imageFile));
-  return result.data as PostPublishData;
+  return result.data;
 }
 
 export async function createPost(formData: FormData) {
   try {
-    const formDataResult = await processFormData(formData);
-    if (formDataResult.status === 'error') {
-      return {
-        status: formDataResult.status,
-        message: formDataResult.message,
-      };
-    }
     const {
+      imageFile,
       title,
       content,
-      imageFile,
+      tags,
       unsplashPhotoId,
       categories,
-      tags,
       status,
-    } = formDataResult as PostPublishData;
+    } = processFormData(formData);
+
+    const imageURL = imageFile
+      ? await processUploadedImage(imageFile)
+      : null;
 
     const { getUser } = getKindeServerSession();
     const kindeUser = await getUser();
     if (!kindeUser) {
-      throw Error('User not found from kinde getUser function');
+      throw new PostError({
+        type: 'text',
+        message: 'User not found',
+      });
     }
 
     const dbUser = await db.user.findFirstOrThrow({
@@ -180,7 +187,7 @@ export async function createPost(formData: FormData) {
         title,
         content,
         authorId: dbUser.id,
-        imageURL: imageFile ? setNextImagePath(imageFile.name) : null,
+        imageURL,
         tags,
         unsplashPhotoId,
         categories,
@@ -190,10 +197,15 @@ export async function createPost(formData: FormData) {
     });
 
     if (!res.ok) {
-      throw Error();
+      throw new PostError({
+        type: 'text',
+        message: 'Failed to create post 😔',
+      });
     }
 
-    const { data } = await res.json();
+    const { data } = (await res.json()) as {
+      data: Post & { categories: Category[] };
+    };
 
     return {
       status: 'ok',
@@ -202,80 +214,138 @@ export async function createPost(formData: FormData) {
       data,
     };
   } catch (error) {
-    console.error('🚀 ~ createPost ~ error:', error);
-    return {
-      status: 'error',
-      message: 'Something went wrong while creating a post 😔',
-    };
+    if (error instanceof PostError) {
+      return handleError({
+        type: error.type,
+        message: error.message,
+        customMessage: error.customMessage,
+      });
+    } else {
+      console.error('createPost error:', error);
+      return {
+        status: 'error',
+        message: 'Something went wrong while creating a post 😔',
+      };
+    }
   }
 }
 
+type updatePostProps = {
+  postId: string;
+  authorId: string;
+  imageURL: string | null;
+  prevStatus: StatusType;
+};
+
 export async function updatePost(
-  { postId, authorId }: { postId: string; authorId: string },
+  { postId, authorId, imageURL, prevStatus }: updatePostProps,
   formData: FormData
 ) {
+  console.log('🚀 ~ prevStatus:', prevStatus);
+  console.log('🚀 ~ imageURL:', imageURL);
+  console.log('🚀 ~ formData ~ before:', formData);
   try {
-    const result = await processFormData(formData);
-    if (result.status === 'error') {
-      return { status: result.status, message: result.message };
-    }
     const {
+      imageFile,
       title,
       content,
-      imageFile,
+      tags,
       unsplashPhotoId,
       categories,
-      tags,
-    } = result as PostDraftData;
+      status,
+    } = processFormData(formData);
+    const isSameImage = !imageURL && !imageFile;
+
+    if (imageURL) {
+      /************************************************************
+       * imageURL is provided only when the user either opted for
+       * a new image or provided an unsplash photoId
+       *
+       * if imageFile is provided, process the new imageFile
+       ************************************************************/
+      deleteUploadedImage(imageURL);
+      imageURL = null;
+    }
+    if (imageFile) {
+      imageURL = await processUploadedImage(imageFile);
+    }
+
+    console.log('🚀 ~ isSameImage:', isSameImage);
+    console.log('🚀 ~ imageURL after processing:', imageURL);
 
     // ensures the user is authenticated and the post belongs to the user
     const kindeUser = await getUser();
     if (!kindeUser) {
-      return {
-        status: 'error',
+      throw new PostError({
+        type: 'text',
         message: 'User not found',
-      };
+      });
     }
     await db.user.findFirstOrThrow({
       where: { email: kindeUser.email as string },
     });
 
-    const UpdatedPost = await db.post.update({
-      where: { id: postId, AND: { authorId } },
-      data: {
+    const res = await fetch(`${process.env.API_ROOT}/post`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postId,
+        authorId,
         title,
         content: content ? content : null,
-        //prettier-ignore
-        imageURL: imageFile ? setNextImagePath(imageFile.name) : null,
-        slug: slugify(title),
+        // only update imageURL if a new image is uploaded or none is chosen
+        ...(!isSameImage && { imageURL }),
         tags: tags ? tags : [],
         unsplashPhotoId: unsplashPhotoId ? unsplashPhotoId : null,
-        categories: categories && {
-          connectOrCreate: [
-            ...categories.map((category) => ({
-              where: {
-                name: category,
-              },
-              create: {
-                name: category,
-                slug: slugify(category),
-              },
-            })),
-          ],
-        },
-      },
+        categories,
+        status,
+        slug: slugify(title),
+        ...(status === 'PUBLISHED' && { isActive: true }),
+        ...(status === 'PUBLISHED' && { publishedAt: new Date() }),
+      }),
     });
+
+    if (!res.ok) {
+      throw new PostError({
+        type: 'text',
+        message: 'Failed to update post 😔',
+      });
+    }
+
+    const { data } = (await res.json()) as {
+      data: Post & { categories: Category[] };
+    };
+
+    function computeMessage() {
+      if (prevStatus === 'DRAFT' && data.status === 'PUBLISHED') {
+        return `Success! Draft Publish 🙌`;
+      }
+      if (prevStatus === 'PUBLISHED') {
+        return `Success! Post Updated 👌`;
+      }
+
+      return `Success! Changes Saved 👌`;
+    }
+
     return {
       status: 'ok',
       //prettier-ignore
-      message: `Success! Changes Saved 👌`,
-      data: UpdatedPost,
+      message: computeMessage(),
+      data,
     };
   } catch (error) {
-    console.error('🚀 ~ updatePost ~ error:', error);
+    if (error instanceof PostError) {
+      return handleError({
+        type: error.type,
+        message: error.message,
+        customMessage: error.customMessage,
+      });
+    }
     return {
       status: 'error',
-      message: "Can't save changes, try again later 😔",
+      message: 'Something went wrong while updating post 😔',
     };
   }
 }

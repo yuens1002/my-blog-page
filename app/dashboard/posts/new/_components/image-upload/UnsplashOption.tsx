@@ -45,12 +45,18 @@ export default function UnsplashOption() {
         const { urls, ...otherRes } = data;
         const newUrls = { ...urls };
         dispatch({
-          type: 'SET_PHOTO_PROPS',
-          payload: { ...otherRes, urls: newUrls },
+          type: 'SET_STATE',
+          payload: {
+            stateProp: 'photoProps',
+            value: { ...otherRes, urls: newUrls },
+          },
         });
         if (!photoId) {
           // ensure the photoId input field is valid before submitting the form
-          dispatch({ type: 'SET_PHOTO_ID', payload: sanitizedId });
+          dispatch({
+            type: 'SET_STATE',
+            payload: { stateProp: 'photoId', value: sanitizedId },
+          });
         }
       } catch (err) {
         if (err instanceof Error) setError(err.message);
@@ -82,8 +88,11 @@ export default function UnsplashOption() {
           readOnly={!!photoProps}
           onChange={(e) =>
             dispatch({
-              type: 'SET_PHOTO_ID',
-              payload: e.target.value,
+              type: 'SET_STATE',
+              payload: {
+                stateProp: 'photoId',
+                value: e.target.value,
+              },
             })
           }
           tabIndex={photoProps ? -1 : 0}
@@ -93,8 +102,14 @@ export default function UnsplashOption() {
             type="button"
             className="p-6 rounded-l-none rounded-br-none"
             onClick={() => {
-              dispatch({ type: 'SET_PHOTO_ID', payload: '' });
-              dispatch({ type: 'SET_PHOTO_PROPS', payload: null });
+              dispatch({
+                type: 'SET_STATE',
+                payload: { stateProp: 'photoId', value: '' },
+              });
+              dispatch({
+                type: 'SET_STATE',
+                payload: { stateProp: 'photoProps', value: null },
+              });
             }}
           >
             Undo

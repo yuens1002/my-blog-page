@@ -11,7 +11,17 @@ export default function PostLayout({ children }: PostLayoutProps) {
   return (
     <PostProvider>
       <section className="lg:container">
-        <Suspense fallback={<Loader />}>{children}</Suspense>
+        <Suspense
+          fallback={
+            <div className="w-full h-full bg-black/25 z-0 fixed top-0 left-0 flex items-center justify-center">
+              <div className="z-10">
+                <Loader />
+              </div>
+            </div>
+          }
+        >
+          {children}
+        </Suspense>
       </section>
     </PostProvider>
   );

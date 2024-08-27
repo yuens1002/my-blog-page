@@ -1,9 +1,11 @@
 import { UnsplashPhoto } from '@/lib/types';
-import { PostWithRelations } from '@/prisma/generated/zod';
-import { Post } from '@prisma/client';
-import { createRef } from 'react';
+// import { PostWithRelations } from '@/prisma/generated/zod';
+// import { Post } from '@prisma/client';
+// import { createRef } from 'react';
 
 type InitialStateTypes = {
+  title: string;
+  content: string;
   selectedCategories: string[];
   createdCategories: string[];
   addedTags: string[];
@@ -13,11 +15,12 @@ type InitialStateTypes = {
   photoId: string;
   photoProps: UnsplashPhoto | null;
   image: string | null;
-  postData: Post | PostWithRelations | null;
-  previewUnsplashBtnRef: React.RefObject<HTMLButtonElement | null> | null;
+  imageURL: string;
 };
 
 export const initialState: InitialStateTypes = {
+  title: '',
+  content: '',
   selectedCategories: [],
   createdCategories: [],
   addedTags: [],
@@ -26,9 +29,8 @@ export const initialState: InitialStateTypes = {
   imageOption: 'upload',
   photoId: '',
   photoProps: null,
-  postData: null,
   image: null,
-  previewUnsplashBtnRef: null,
+  imageURL: '',
 };
 
 function DeleteOneFromArr(arr: string[], item: string) {
@@ -40,8 +42,8 @@ export function reducer(
   { type, payload }: { type: string; payload: any }
 ) {
   switch (type) {
-    case 'SET_SELECTED_CATEGORIES':
-      return { ...state, selectedCategories: payload };
+    case 'SET_STATE':
+      return { ...state, [payload.stateProp]: payload.value };
     case 'DEL_FROM_SELECTED_CATEGORIES':
       return {
         ...state,
@@ -63,8 +65,6 @@ export function reducer(
           payload
         ),
       };
-    case 'SET_ADDED_TAGS':
-      return { ...state, addedTags: payload };
     case 'ADD_TO_ADDED_TAGS':
       return { ...state, addedTags: [...state.addedTags, payload] };
     case 'DEL_FROM_ADDED_TAGS':
@@ -72,22 +72,6 @@ export function reducer(
         ...state,
         addedTags: DeleteOneFromArr(state.addedTags, payload),
       };
-    case 'SET_CREATE_CATEGORY_INPUT':
-      return { ...state, createCategoryInput: payload };
-    case 'SET_ADD_TAG_INPUT':
-      return { ...state, addTagInput: payload };
-    case 'SET_IMAGE_OPTION':
-      return { ...state, imageOption: payload };
-    case 'SET_PHOTO_ID':
-      return { ...state, photoId: payload };
-    case 'SET_PHOTO_PROPS':
-      return { ...state, photoProps: payload };
-    case 'SET_POST_DATA':
-      return { ...state, postData: payload };
-    case 'SET_IMAGE':
-      return { ...state, image: payload };
-    case 'SET_PREVIEW_UNSPLASH_BTN_REF':
-      return { ...state, previewUnsplashBtnRef: payload };
     case 'RESET':
       return initialState;
     default:

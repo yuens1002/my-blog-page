@@ -58,7 +58,10 @@ export default function CreateCategoryInput() {
       type: 'SET_CREATED_CATEGORIES',
       payload: sanitizedInputValue,
     });
-    dispatch({ type: 'SET_CREATE_CATEGORY_INPUT', payload: '' });
+    dispatch({
+      type: 'SET_STATE',
+      payload: { stateProp: 'createCategoryInput', value: '' },
+    });
   }, [inputValue, createdCategories, categories]);
 
   return (
@@ -87,8 +90,8 @@ export default function CreateCategoryInput() {
           inputValue,
           (value) => {
             dispatch({
-              type: 'SET_CREATE_CATEGORY_INPUT',
-              payload: value,
+              type: 'SET_STATE',
+              payload: { stateProp: 'createCategoryInput', value },
             });
           },
         ]}

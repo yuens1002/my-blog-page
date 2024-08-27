@@ -1,4 +1,4 @@
-import { type MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import BadgeWindow from '../BadgeWindow';
 import BadgeButton from '../BadgeButton';
 import { usePostContext } from '@/app/dashboard/_hooks/usePostContext';

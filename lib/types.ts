@@ -43,13 +43,12 @@ export const createPhotoSchema = z.object({
 
 export type UnsplashPhoto = z.infer<typeof createPhotoSchema>;
 
-export type InitialFormState = {
-  message: string | Record<string, string[]>;
-  status: string;
-  data?: Post;
-};
-
 export type FormSubmitAction = 'PUBLISH' | 'DRAFT' | 'UPDATE';
+
+export type FormDataObject = Record<
+  string,
+  string | File | (File | string)[]
+>;
 
 export type PostRequestBody = {
   title: string;
@@ -61,4 +60,17 @@ export type PostRequestBody = {
   status: StatusType;
   slug: string;
   authorId: string;
+};
+
+export type PatchRequestBody = {
+  postId: string;
+  authorId: string;
+  title?: string;
+  content?: string;
+  imageURL?: string | null;
+  tags?: string[];
+  unsplashPhotoId?: string | null;
+  categories?: string[];
+  status?: StatusType;
+  slug?: string;
 };

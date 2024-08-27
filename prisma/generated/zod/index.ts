@@ -14,7 +14,7 @@ export const TransactionIsolationLevelSchema = z.enum(['ReadUncommitted','ReadCo
 
 export const UserScalarFieldEnumSchema = z.enum(['id','kindeId','email','firstName','lastName','bio','createdAt','role']);
 
-export const PostScalarFieldEnumSchema = z.enum(['id','title','content','imageURL','unsplashPhotoId','authorId','isPublished','slug','tags','createdAt','updatedAt','status']);
+export const PostScalarFieldEnumSchema = z.enum(['id','title','content','imageURL','unsplashPhotoId','authorId','isActive','slug','tags','createdAt','updatedAt','publishedAt','status']);
 
 export const StatsScalarFieldEnumSchema = z.enum(['id','likes','dislikes','views','postId']);
 
@@ -30,7 +30,7 @@ export const RoleSchema = z.enum(['USER','ADMIN']);
 
 export type RoleType = `${z.infer<typeof RoleSchema>}`
 
-export const StatusSchema = z.enum(['PUBLISHED','DRAFT','INACTIVE']);
+export const StatusSchema = z.enum(['PUBLISHED','DRAFT']);
 
 export type StatusType = `${z.infer<typeof StatusSchema>}`
 
@@ -80,11 +80,12 @@ export const PostSchema = z.object({
   imageURL: z.string().nullable(),
   unsplashPhotoId: z.string().nullable(),
   authorId: z.string(),
-  isPublished: z.boolean(),
+  isActive: z.boolean(),
   slug: z.string(),
   tags: z.string().array(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  publishedAt: z.coerce.date().nullable(),
 })
 
 export type Post = z.infer<typeof PostSchema>
@@ -226,11 +227,12 @@ export const PostSelectSchema: z.ZodType<Prisma.PostSelect> = z.object({
   imageURL: z.boolean().optional(),
   unsplashPhotoId: z.boolean().optional(),
   authorId: z.boolean().optional(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.boolean().optional(),
   tags: z.boolean().optional(),
   createdAt: z.boolean().optional(),
   updatedAt: z.boolean().optional(),
+  publishedAt: z.boolean().optional(),
   status: z.boolean().optional(),
   author: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
   stats: z.union([z.boolean(),z.lazy(() => StatsArgsSchema)]).optional(),
@@ -401,11 +403,12 @@ export const PostWhereInputSchema: z.ZodType<Prisma.PostWhereInput> = z.object({
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   tags: z.lazy(() => StringNullableListFilterSchema).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  publishedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   author: z.union([ z.lazy(() => UserRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
   stats: z.union([ z.lazy(() => StatsNullableRelationFilterSchema),z.lazy(() => StatsWhereInputSchema) ]).optional().nullable(),
@@ -419,11 +422,12 @@ export const PostOrderByWithRelationInputSchema: z.ZodType<Prisma.PostOrderByWit
   imageURL: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   unsplashPhotoId: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
-  isPublished: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
   tags: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  publishedAt: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   author: z.lazy(() => UserOrderByWithRelationInputSchema).optional(),
   stats: z.lazy(() => StatsOrderByWithRelationInputSchema).optional(),
@@ -469,10 +473,11 @@ export const PostWhereUniqueInputSchema: z.ZodType<Prisma.PostWhereUniqueInput> 
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   tags: z.lazy(() => StringNullableListFilterSchema).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  publishedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   author: z.union([ z.lazy(() => UserRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
   stats: z.union([ z.lazy(() => StatsNullableRelationFilterSchema),z.lazy(() => StatsWhereInputSchema) ]).optional().nullable(),
@@ -486,11 +491,12 @@ export const PostOrderByWithAggregationInputSchema: z.ZodType<Prisma.PostOrderBy
   imageURL: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   unsplashPhotoId: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
-  isPublished: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
   tags: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  publishedAt: z.union([ z.lazy(() => SortOrderSchema),z.lazy(() => SortOrderInputSchema) ]).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => PostCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => PostMaxOrderByAggregateInputSchema).optional(),
@@ -507,11 +513,12 @@ export const PostScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.PostScal
   imageURL: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  isPublished: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
+  isActive: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   tags: z.lazy(() => StringNullableListFilterSchema).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  publishedAt: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),z.coerce.date() ]).optional().nullable(),
   status: z.union([ z.lazy(() => EnumStatusWithAggregatesFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
 }).strict();
 
@@ -744,11 +751,12 @@ export const PostCreateInputSchema: z.ZodType<Prisma.PostCreateInput> = z.object
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   author: z.lazy(() => UserCreateNestedOneWithoutPostsInputSchema),
   stats: z.lazy(() => StatsCreateNestedOneWithoutPostInputSchema).optional(),
@@ -762,11 +770,12 @@ export const PostUncheckedCreateInputSchema: z.ZodType<Prisma.PostUncheckedCreat
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   stats: z.lazy(() => StatsUncheckedCreateNestedOneWithoutPostInputSchema).optional(),
   categories: z.lazy(() => CategoryUncheckedCreateNestedManyWithoutPostsInputSchema).optional()
@@ -778,11 +787,12 @@ export const PostUpdateInputSchema: z.ZodType<Prisma.PostUpdateInput> = z.object
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   author: z.lazy(() => UserUpdateOneRequiredWithoutPostsNestedInputSchema).optional(),
   stats: z.lazy(() => StatsUpdateOneWithoutPostNestedInputSchema).optional(),
@@ -796,11 +806,12 @@ export const PostUncheckedUpdateInputSchema: z.ZodType<Prisma.PostUncheckedUpdat
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   stats: z.lazy(() => StatsUncheckedUpdateOneWithoutPostNestedInputSchema).optional(),
   categories: z.lazy(() => CategoryUncheckedUpdateManyWithoutPostsNestedInputSchema).optional()
@@ -813,11 +824,12 @@ export const PostCreateManyInputSchema: z.ZodType<Prisma.PostCreateManyInput> = 
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional()
 }).strict();
 
@@ -827,11 +839,12 @@ export const PostUpdateManyMutationInputSchema: z.ZodType<Prisma.PostUpdateManyM
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
@@ -842,11 +855,12 @@ export const PostUncheckedUpdateManyInputSchema: z.ZodType<Prisma.PostUncheckedU
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
@@ -1120,6 +1134,17 @@ export const StringNullableListFilterSchema: z.ZodType<Prisma.StringNullableList
   isEmpty: z.boolean().optional()
 }).strict();
 
+export const DateTimeNullableFilterSchema: z.ZodType<Prisma.DateTimeNullableFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableFilterSchema) ]).optional().nullable(),
+}).strict();
+
 export const EnumStatusFilterSchema: z.ZodType<Prisma.EnumStatusFilter> = z.object({
   equals: z.lazy(() => StatusSchema).optional(),
   in: z.lazy(() => StatusSchema).array().optional(),
@@ -1154,11 +1179,12 @@ export const PostCountOrderByAggregateInputSchema: z.ZodType<Prisma.PostCountOrd
   imageURL: z.lazy(() => SortOrderSchema).optional(),
   unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
-  isPublished: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
   tags: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  publishedAt: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -1169,10 +1195,11 @@ export const PostMaxOrderByAggregateInputSchema: z.ZodType<Prisma.PostMaxOrderBy
   imageURL: z.lazy(() => SortOrderSchema).optional(),
   unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
-  isPublished: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  publishedAt: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -1183,10 +1210,11 @@ export const PostMinOrderByAggregateInputSchema: z.ZodType<Prisma.PostMinOrderBy
   imageURL: z.lazy(() => SortOrderSchema).optional(),
   unsplashPhotoId: z.lazy(() => SortOrderSchema).optional(),
   authorId: z.lazy(() => SortOrderSchema).optional(),
-  isPublished: z.lazy(() => SortOrderSchema).optional(),
+  isActive: z.lazy(() => SortOrderSchema).optional(),
   slug: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
   updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  publishedAt: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -1196,6 +1224,20 @@ export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregates
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
   _min: z.lazy(() => NestedBoolFilterSchema).optional(),
   _max: z.lazy(() => NestedBoolFilterSchema).optional()
+}).strict();
+
+export const DateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeNullableWithAggregatesFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional()
 }).strict();
 
 export const EnumStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumStatusWithAggregatesFilter> = z.object({
@@ -1420,6 +1462,10 @@ export const BoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.BoolFieldUpd
 export const PostUpdatetagsInputSchema: z.ZodType<Prisma.PostUpdatetagsInput> = z.object({
   set: z.string().array().optional(),
   push: z.union([ z.string(),z.string().array() ]).optional(),
+}).strict();
+
+export const NullableDateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableDateTimeFieldUpdateOperationsInput> = z.object({
+  set: z.coerce.date().optional().nullable()
 }).strict();
 
 export const EnumStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumStatusFieldUpdateOperationsInput> = z.object({
@@ -1679,6 +1725,17 @@ export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> = z.obje
   not: z.union([ z.boolean(),z.lazy(() => NestedBoolFilterSchema) ]).optional(),
 }).strict();
 
+export const NestedDateTimeNullableFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableFilterSchema) ]).optional().nullable(),
+}).strict();
+
 export const NestedEnumStatusFilterSchema: z.ZodType<Prisma.NestedEnumStatusFilter> = z.object({
   equals: z.lazy(() => StatusSchema).optional(),
   in: z.lazy(() => StatusSchema).array().optional(),
@@ -1692,6 +1749,20 @@ export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWi
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
   _min: z.lazy(() => NestedBoolFilterSchema).optional(),
   _max: z.lazy(() => NestedBoolFilterSchema).optional()
+}).strict();
+
+export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDateTimeNullableWithAggregatesFilter> = z.object({
+  equals: z.coerce.date().optional().nullable(),
+  in: z.coerce.date().array().optional().nullable(),
+  notIn: z.coerce.date().array().optional().nullable(),
+  lt: z.coerce.date().optional(),
+  lte: z.coerce.date().optional(),
+  gt: z.coerce.date().optional(),
+  gte: z.coerce.date().optional(),
+  not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeNullableWithAggregatesFilterSchema) ]).optional().nullable(),
+  _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+  _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
+  _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional()
 }).strict();
 
 export const NestedEnumStatusWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumStatusWithAggregatesFilter> = z.object({
@@ -1764,11 +1835,12 @@ export const PostCreateWithoutAuthorInputSchema: z.ZodType<Prisma.PostCreateWith
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   stats: z.lazy(() => StatsCreateNestedOneWithoutPostInputSchema).optional(),
   categories: z.lazy(() => CategoryCreateNestedManyWithoutPostsInputSchema).optional()
@@ -1780,11 +1852,12 @@ export const PostUncheckedCreateWithoutAuthorInputSchema: z.ZodType<Prisma.PostU
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   stats: z.lazy(() => StatsUncheckedCreateNestedOneWithoutPostInputSchema).optional(),
   categories: z.lazy(() => CategoryUncheckedCreateNestedManyWithoutPostsInputSchema).optional()
@@ -1826,11 +1899,12 @@ export const PostScalarWhereInputSchema: z.ZodType<Prisma.PostScalarWhereInput> 
   imageURL: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
   authorId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  isPublished: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  isActive: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
   slug: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   tags: z.lazy(() => StringNullableListFilterSchema).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  publishedAt: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
   status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
 }).strict();
 
@@ -1986,11 +2060,12 @@ export const PostCreateWithoutStatsInputSchema: z.ZodType<Prisma.PostCreateWitho
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   author: z.lazy(() => UserCreateNestedOneWithoutPostsInputSchema),
   categories: z.lazy(() => CategoryCreateNestedManyWithoutPostsInputSchema).optional()
@@ -2003,11 +2078,12 @@ export const PostUncheckedCreateWithoutStatsInputSchema: z.ZodType<Prisma.PostUn
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   categories: z.lazy(() => CategoryUncheckedCreateNestedManyWithoutPostsInputSchema).optional()
 }).strict();
@@ -2034,11 +2110,12 @@ export const PostUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUpdateWitho
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   author: z.lazy(() => UserUpdateOneRequiredWithoutPostsNestedInputSchema).optional(),
   categories: z.lazy(() => CategoryUpdateManyWithoutPostsNestedInputSchema).optional()
@@ -2051,11 +2128,12 @@ export const PostUncheckedUpdateWithoutStatsInputSchema: z.ZodType<Prisma.PostUn
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   categories: z.lazy(() => CategoryUncheckedUpdateManyWithoutPostsNestedInputSchema).optional()
 }).strict();
@@ -2066,11 +2144,12 @@ export const PostCreateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostCreate
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   author: z.lazy(() => UserCreateNestedOneWithoutPostsInputSchema),
   stats: z.lazy(() => StatsCreateNestedOneWithoutPostInputSchema).optional()
@@ -2083,11 +2162,12 @@ export const PostUncheckedCreateWithoutCategoriesInputSchema: z.ZodType<Prisma.P
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
   authorId: z.string(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional(),
   stats: z.lazy(() => StatsUncheckedCreateNestedOneWithoutPostInputSchema).optional()
 }).strict();
@@ -2119,11 +2199,12 @@ export const PostCreateManyAuthorInputSchema: z.ZodType<Prisma.PostCreateManyAut
   content: z.string().optional().nullable(),
   imageURL: z.string().optional().nullable(),
   unsplashPhotoId: z.string().optional().nullable(),
-  isPublished: z.boolean().optional(),
+  isActive: z.boolean().optional(),
   slug: z.string(),
   tags: z.union([ z.lazy(() => PostCreatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
+  publishedAt: z.coerce.date().optional().nullable(),
   status: z.lazy(() => StatusSchema).optional()
 }).strict();
 
@@ -2133,11 +2214,12 @@ export const PostUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostUpdateWith
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   stats: z.lazy(() => StatsUpdateOneWithoutPostNestedInputSchema).optional(),
   categories: z.lazy(() => CategoryUpdateManyWithoutPostsNestedInputSchema).optional()
@@ -2149,11 +2231,12 @@ export const PostUncheckedUpdateWithoutAuthorInputSchema: z.ZodType<Prisma.PostU
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   stats: z.lazy(() => StatsUncheckedUpdateOneWithoutPostNestedInputSchema).optional(),
   categories: z.lazy(() => CategoryUncheckedUpdateManyWithoutPostsNestedInputSchema).optional()
@@ -2165,11 +2248,12 @@ export const PostUncheckedUpdateManyWithoutAuthorInputSchema: z.ZodType<Prisma.P
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
@@ -2197,11 +2281,12 @@ export const PostUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.PostUpdate
   content: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   author: z.lazy(() => UserUpdateOneRequiredWithoutPostsNestedInputSchema).optional(),
   stats: z.lazy(() => StatsUpdateOneWithoutPostNestedInputSchema).optional()
@@ -2214,11 +2299,12 @@ export const PostUncheckedUpdateWithoutCategoriesInputSchema: z.ZodType<Prisma.P
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
   stats: z.lazy(() => StatsUncheckedUpdateOneWithoutPostNestedInputSchema).optional()
 }).strict();
@@ -2230,11 +2316,12 @@ export const PostUncheckedUpdateManyWithoutCategoriesInputSchema: z.ZodType<Pris
   imageURL: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   unsplashPhotoId: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   authorId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  isPublished: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
+  isActive: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
   slug: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   tags: z.union([ z.lazy(() => PostUpdatetagsInputSchema),z.string().array() ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  publishedAt: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
   status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 

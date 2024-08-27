@@ -15,7 +15,10 @@ export function useFetch<T>(
     const fetchData = async () => {
       setIsPending(true);
       try {
-        const response = await fetch(url, options);
+        const response = await fetch(url, {
+          ...options,
+          cache: 'no-store',
+        });
         const { data } = await response.json();
         setData(data);
         setIsPending(false);
