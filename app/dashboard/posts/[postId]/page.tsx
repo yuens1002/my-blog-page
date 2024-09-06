@@ -4,19 +4,19 @@ import PageHeading from '@/components/PageHeading';
 import NewPostForm from '@/app/dashboard/posts/_components/PostForm';
 
 import { useFetch } from '@/hooks/useFetch';
-import Loader from '@/components/Loader';
 import { useEffect } from 'react';
 import { usePostContext } from '../../_hooks/usePostContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Category, Post } from '@prisma/client';
+import FullPageLoader from '@/components/FullPageLoader';
 
 type EditPostPageProps = { params: { postId: string } };
 
 export default function EditPostPage({
   params: { postId },
 }: EditPostPageProps) {
-  console.log('🚀 ~ editPostpage:', 'loaded');
+  console.log('🚀 ~ edit Post page:', 'loaded');
   const [, dispatch] = usePostContext();
   const headers = new Headers();
   headers.append('postId', postId);
@@ -29,6 +29,7 @@ export default function EditPostPage({
   if (error) {
     throw new Error('Could not fetch post');
   }
+  // probably don't need useEffect here
   useEffect(() => {
     if (post) {
       console.log('🚀 ~ useEffect ~ post:', post);
@@ -79,22 +80,19 @@ export default function EditPostPage({
       dispatch({ type: 'RESET' });
     };
   }, [post]);
+
+  if (isPending) {
+    return <FullPageLoader />;
+  }
   return (
-    <div className="relative px-4 md:px-8 lg:px-0">
-      {isPending && (
-        <div className="w-full h-full bg-black/25 z-0 fixed top-0 left-0 flex items-center justify-center">
-          <div className="z-10">
-            <Loader />
-          </div>
-        </div>
-      )}
+    <div className="relative lg:container">
       <header className="flex justify-between items-center gap-4 mb-12">
         <PageHeading>Edit a Post</PageHeading>
         <Button asChild>
           <Link href="/dashboard/posts/new">New Post</Link>
         </Button>
       </header>
-      {post && <NewPostForm postData={post} />}
+      {post ? <NewPostForm postData={post} /> : null}
     </div>
   );
 }

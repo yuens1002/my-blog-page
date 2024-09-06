@@ -74,3 +74,18 @@ export type PatchRequestBody = {
   status?: StatusType;
   slug?: string;
 };
+
+export type PutRequestBody = {
+  postId: string;
+  authorId: string;
+  title?: string;
+  content?: string;
+  imageURL?: string | null;
+  tags?: string[];
+  unsplashPhotoId?: string | null;
+  isActive?: boolean;
+  status?: StatusType;
+  slug?: string;
+};
+
+export type PostWithCategories = Post & { categories: Category[] };

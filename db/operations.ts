@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import db from './prismaDb';
 
 export async function getPostsByAuthor(authorEmail: string) {
@@ -17,6 +17,7 @@ export async function getPostsByAuthor(authorEmail: string) {
     if (error instanceof Error) {
       console.error(error);
     }
+    return error;
   }
 }
 

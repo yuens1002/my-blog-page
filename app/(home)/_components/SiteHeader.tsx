@@ -8,12 +8,11 @@ import {
   LoginLink,
   LogoutLink,
 } from '@kinde-oss/kinde-auth-nextjs/components';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { Nav, NavLink } from '@/components/Nav';
+import isUserAuthenticated from '@/lib/isAuthenticated';
 
 export default async function SiteHeader() {
-  const { isAuthenticated } = getKindeServerSession();
-  const isLoggedIn = await isAuthenticated();
+  const isLoggedIn = await isUserAuthenticated();
   const categories = await prisma.category.findMany();
 
   console.log('[categories]: ', categories);
@@ -30,14 +29,17 @@ export default async function SiteHeader() {
           <span className="font-normal">blog</span>
         </Link>
         <Nav>
-          {categories.map((link) => (
-            <NavLink
-              key={link.id}
-              href={`/${encodeURIComponent(link.slug)}`}
-            >
-              <span className="capitalize">{link.name}</span>
-            </NavLink>
-          ))}
+          {categories.map((link, i) => {
+            if (i > 2) return null;
+            return (
+              <NavLink
+                key={link.id}
+                href={`/${encodeURIComponent(link.slug)}`}
+              >
+                <span className="capitalize">{link.name}</span>
+              </NavLink>
+            );
+          })}
           {isLoggedIn && (
             <Button asChild variant={'link'} size={'sm'}>
               <Link

@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import isUserAuthenticated from './lib/isAuthenticated';
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-  const { isAuthenticated } = getKindeServerSession();
-  const isLoggedIn = await isAuthenticated();
+  const isLoggedIn = await isUserAuthenticated();
 
   if (!isLoggedIn)
     return NextResponse.redirect(

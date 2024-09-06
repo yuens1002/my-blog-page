@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 
 export function useFetch<T>(
   url: string,
-  options?: RequestInit
+  options?: RequestInit,
+  watchFor?: Array<any>
 ): [T | null, string | null, boolean] {
   const [data, setData] = useState<T | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -33,6 +34,6 @@ export function useFetch<T>(
     };
 
     fetchData();
-  }, [url]);
+  }, watchFor ?? [url]);
   return [data, error, isPending];
 }

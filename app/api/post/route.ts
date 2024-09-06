@@ -1,12 +1,20 @@
 import { headers } from 'next/headers';
 import db from '@/db/prismaDb';
 import { NextResponse } from 'next/server';
-import type { PatchRequestBody, PostRequestBody } from '@/lib/types';
+import type {
+  PatchRequestBody,
+  PostRequestBody,
+  PutRequestBody,
+} from '@/lib/types';
 import { keysToObject, slugify } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 
 export async function GET() {
+  console.log('get post being called');
   const headerList = headers();
   const postId = headerList.get('postId');
+  const slug = headerList.get('slug');
+  console.log('🚀 ~ GET ~ slug:', slug);
   const includeHeader = headerList.get('include');
 
   if (!postId) throw new Error('Post not found');
@@ -30,32 +38,15 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: Request) {
-  const { postId, authorId, categories, ...rest }: PatchRequestBody =
+export async function PUT(request: Request) {
+  const { postId, authorId, ...rest }: PutRequestBody =
     await request.json();
-  console.log('🚀 ~ PATCH ~ rest:', rest);
+  console.log('🚀 ~ PUT ~ rest:', rest);
   try {
     const data = await db.post.update({
       where: { id: postId, AND: { authorId } },
       data: {
-        categories: {
-          set: [],
-          ...(categories && {
-            connectOrCreate: categories.map((category) => ({
-              where: {
-                name: category,
-              },
-              create: {
-                name: category,
-                slug: slugify(category),
-              },
-            })),
-          }),
-        },
         ...rest,
-      },
-      include: {
-        categories: true,
       },
     });
     return NextResponse.json({ data });
@@ -123,6 +114,61 @@ export async function POST(request: Request) {
     return new NextResponse(null, {
       status: 500,
       statusText: 'An error occurred while creating a post',
+    });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const { postId, authorId } = await request.json();
+  try {
+    const data = await db.post.delete({
+      where: { id: postId, authorId },
+    });
+    revalidatePath('/dashboard/posts');
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error(error);
+    return new NextResponse(null, {
+      status: 500,
+      statusText: 'An error occurred while deleting the post',
+    });
+  }
+}
+
+export async function PATCH(request: Request) {
+  const { postId, authorId, categories, ...rest }: PatchRequestBody =
+    await request.json();
+  console.log('🚀 ~ PATCH ~ rest:', rest);
+  try {
+    const data = await db.post.update({
+      where: { id: postId, AND: { authorId } },
+      data: {
+        categories: {
+          set: [],
+          ...(categories && {
+            connectOrCreate: categories.map((category) => ({
+              where: {
+                name: category,
+              },
+              create: {
+                name: category,
+                slug: slugify(category),
+              },
+            })),
+          }),
+        },
+        ...rest,
+      },
+      include: {
+        categories: true,
+      },
+    });
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error(error);
+    return new NextResponse(null, {
+      status: 500,
+      statusText: 'An error occurred while updating the post',
     });
   }
 }

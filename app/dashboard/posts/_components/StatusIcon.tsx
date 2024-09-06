@@ -1,26 +1,31 @@
 import React from 'react';
 import type { Post } from '@prisma/client';
-import { MonitorCheck, MonitorOff, ScrollText } from 'lucide-react';
+import {
+  CircleCheckBig,
+  CircleSlash,
+  NotebookPen,
+} from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 
 type PostStatusIconType = {
   status: Post['status'];
+  isActive: boolean;
 };
 export default function PostStatusIcon({
   status,
+  isActive,
 }: PostStatusIconType) {
   return (
     <div className="flex items-center">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <StatusIcon status={status} />
+            <StatusIcon status={status} isActive={isActive} />
           </TooltipTrigger>
           <TooltipContent>
             <p className="capitalize">{status.toLocaleLowerCase()}</p>
@@ -32,14 +37,20 @@ export default function PostStatusIcon({
   );
 }
 
-function StatusIcon({ status }: PostStatusIconType) {
+function StatusIcon({ status, isActive }: PostStatusIconType) {
   switch (status) {
     case 'DRAFT':
-      return <ScrollText size={16} aria-hidden="true" />;
+      return <NotebookPen size={16} aria-hidden="true" />;
     case 'PUBLISHED':
-      return <MonitorCheck size={16} aria-hidden="true" />;
-    case 'DRAFT':
-      return <MonitorOff size={16} aria-hidden="true" />;
+      return isActive ? (
+        <CircleCheckBig
+          color="#10b981"
+          size={16}
+          aria-hidden="true"
+        />
+      ) : (
+        <CircleSlash size={16} aria-hidden="true" />
+      );
     default:
       return <p>status not found</p>;
   }

@@ -2,7 +2,7 @@
 
 import db from '@/db/prismaDb';
 import { z } from 'zod';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+
 import { slugify } from '@/lib/utils';
 import { StatusType } from '@/prisma/generated/zod';
 import {
@@ -13,6 +13,8 @@ import {
 import { Category, Post } from '@prisma/client';
 import PostError, { handleError } from '@/lib/processPostError';
 import { FormDataObject } from '@/lib/types';
+import getKindeUser from '@/lib/getKindeUser';
+import { revalidatePath } from 'next/cache';
 
 // revalidatePath('/dashboard/posts/[postId]', 'page');
 
@@ -37,8 +39,6 @@ const imageSchema = z
     `Max file size is ${MAX_FILE_SIZE / 1000000}MB.`
   );
 
-const { getUser } = getKindeServerSession();
-
 export type PostPublishData = z.infer<typeof PostPublishSchema>;
 export type PostDraftData = z.infer<typeof PostDraftSchema>;
 
@@ -61,6 +61,7 @@ const PostPublishSchema = z
     categories: z.array(z.string()).nonempty(),
     tags: z.array(z.string()).optional(),
     status: z.custom<StatusType>(),
+    isActive: z.boolean().optional(),
   })
   .refine(
     (data) => data.imageFile || data.unsplashPhotoId || data.imageURL,
@@ -165,15 +166,7 @@ export async function createPost(formData: FormData) {
       ? await processUploadedImage(imageFile)
       : null;
 
-    const { getUser } = getKindeServerSession();
-    const kindeUser = await getUser();
-    if (!kindeUser) {
-      throw new PostError({
-        type: 'text',
-        message: 'User not found',
-      });
-    }
-
+    const kindeUser = await getKindeUser();
     const dbUser = await db.user.findFirstOrThrow({
       where: { email: kindeUser.email as string },
     });
@@ -274,13 +267,7 @@ export async function updatePost(
     console.log('🚀 ~ imageURL after processing:', imageURL);
 
     // ensures the user is authenticated and the post belongs to the user
-    const kindeUser = await getUser();
-    if (!kindeUser) {
-      throw new PostError({
-        type: 'text',
-        message: 'User not found',
-      });
-    }
+    const kindeUser = await getKindeUser();
     await db.user.findFirstOrThrow({
       where: { email: kindeUser.email as string },
     });
@@ -333,6 +320,154 @@ export async function updatePost(
       status: 'ok',
       //prettier-ignore
       message: computeMessage(),
+      data,
+    };
+  } catch (error) {
+    if (error instanceof PostError) {
+      return handleError({
+        type: error.type,
+        message: error.message,
+        customMessage: error.customMessage,
+      });
+    }
+    return {
+      status: 'error',
+      message: 'Something went wrong while updating post 😔',
+    };
+  }
+}
+
+export async function getPosts({
+  skip,
+  take,
+}: {
+  skip: number;
+  take: number;
+}) {
+  try {
+    const kindeUser = await getKindeUser();
+    const res = await fetch(
+      `${process.env.API_ROOT}/posts?author-email=${kindeUser.email}&take=${take}&skip=${skip}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new PostError({
+        type: 'text',
+        message: 'Failed to fetch posts 😔',
+      });
+    }
+
+    const { data, count } = (await res.json()) as {
+      data: Post[];
+      count: number;
+    };
+    console.log('🚀 ~ const{data,count}= ~ data:', data);
+    revalidatePath('/dashboard/posts', 'page');
+    return {
+      status: 'ok',
+      message: 'Posts fetched successfully 🙌',
+      data,
+      count,
+    };
+  } catch (error) {
+    if (error instanceof PostError) {
+      return handleError({
+        type: error.type,
+        message: error.message,
+        customMessage: error.customMessage,
+      });
+    }
+    return {
+      status: 'error',
+      message: 'Something went wrong while fetching posts 😔',
+    };
+  }
+}
+
+export async function deletePost({
+  postId,
+  authorId,
+}: {
+  postId: string;
+  authorId: string;
+}) {
+  try {
+    const res = await fetch(`${process.env.API_ROOT}/post`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postId,
+        authorId,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new PostError({
+        type: 'text',
+        message: 'Failed to delete post 😔',
+      });
+    }
+    revalidatePath('/dashboard/posts', 'page');
+    return {
+      status: 'ok',
+      message: 'Post deleted successfully 🙌',
+    };
+  } catch (error) {
+    if (error instanceof PostError) {
+      return handleError({
+        type: error.type,
+        message: error.message,
+        customMessage: error.customMessage,
+      });
+    }
+    return {
+      status: 'error',
+      message: 'Something went wrong while deleting post 😔',
+    };
+  }
+}
+
+export async function putPartialPost(
+  postId: string,
+  authorId: string,
+  props: Record<string, any>
+) {
+  try {
+    const res = await fetch(`${process.env.API_ROOT}/post`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postId,
+        authorId,
+        ...props,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new PostError({
+        type: 'text',
+        message: 'Failed to update post 😔',
+      });
+    }
+
+    const { data } = (await res.json()) as {
+      data: Post & { categories: Category[] };
+    };
+
+    return {
+      status: 'ok',
+      //prettier-ignore
+      message: `Success! post updated 🙌`,
       data,
     };
   } catch (error) {

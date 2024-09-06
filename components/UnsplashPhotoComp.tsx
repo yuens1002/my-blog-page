@@ -46,7 +46,7 @@ export default async function UnsplashPhotoComp({
           blurDataURL={blurHashToDataURL(blur_hash)}
         />
       </div>
-      <div className="text-xs text-right">
+      <div className="text-xs text-right pr-4">
         Photo by{' '}
         <a
           className="font-semibold hover:underline hover:underline-offset-4 hover:transition-all"

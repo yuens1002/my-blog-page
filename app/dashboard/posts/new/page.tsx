@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeading from '@/components/PageHeading';
-import NewPostForm from '@/app/dashboard/posts/_components/PostForm';
+import PostForm from '@/app/dashboard/posts/_components/PostForm';
 import { usePostContext } from '../../_hooks/usePostContext';
 import { useEffect } from 'react';
 
@@ -11,9 +11,9 @@ export default function CreateNewPostPage() {
     dispatch({ type: 'RESET' });
   }, []);
   return (
-    <div className="px-4 md:px-8 lg:px-0">
+    <div className="lg:container">
       <PageHeading>Create a New Post</PageHeading>
-      <NewPostForm />
+      <PostForm />
     </div>
   );
 }

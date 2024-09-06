@@ -6,13 +6,13 @@ import {
   LoginLink,
   LogoutLink,
 } from '@kinde-oss/kinde-auth-nextjs/components';
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+
 import { Nav, NavLink } from '@/components/Nav';
 import { PanelTop } from 'lucide-react';
+import isUserAuthenticated from '@/lib/isAuthenticated';
 
 export default async function DashboardHeader() {
-  const { isAuthenticated } = getKindeServerSession();
-  const isLoggedIn = await isAuthenticated();
+  const isLoggedIn = await isUserAuthenticated();
 
   const dashboardLinks = [
     { id: 'posts', href: '/dashboard/posts', name: 'posts' },
