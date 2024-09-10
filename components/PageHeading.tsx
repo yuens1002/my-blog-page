@@ -4,5 +4,7 @@ type PageHeadingProps = {
   children: ReactNode;
 };
 export default function PageHeading({ children }: PageHeadingProps) {
-  return <h1 className="text-5xl tracking-tight">{children}</h1>;
+  return (
+    <h1 className="text-4xl font-bold tracking-tight">{children}</h1>
+  );
 }

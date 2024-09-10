@@ -7,6 +7,7 @@ import {
   ChevronsRight,
   ChevronsUpDown,
 } from 'lucide-react';
+import { Fragment } from 'react';
 
 type PaginationProps = {
   count: number;
@@ -93,7 +94,7 @@ export default function Pagination({
         </span>
       </div>
       <div className="flex gap-2">
-        <div className="relative mx-4">
+        <div className="relative mx-4 hidden lg:block">
           <Select
             name="posts-per-page"
             aria-label="Posts per page"
@@ -119,7 +120,7 @@ export default function Pagination({
         >
           <ChevronLeft />
         </Button>
-        {renderPageButtons()}
+        <div className="hidden lg:block">{renderPageButtons()}</div>
         <Button
           variant={'outline'}
           onClick={handleNext}

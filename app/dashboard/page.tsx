@@ -17,7 +17,7 @@ export default async function Dashboard() {
   const user = await getUser();
 
   return (
-    <div className="container">
+    <section className="lg:container">
       <h2 className="text-muted-foreground indent-1">
         Hello,{' '}
         <span className="capitalize">
@@ -104,6 +104,6 @@ export default async function Dashboard() {
           </CardFooter>
         </Card>
       </div>
-    </div>
+    </section>
   );
 }
