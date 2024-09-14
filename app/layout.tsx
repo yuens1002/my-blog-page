@@ -3,9 +3,9 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Nav, NavLink } from '@/components/Nav';
-import prisma from '@/db/prismaDb';
+import prisma from '@/prisma/prismaDb';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import SignInAndOutButtons from '@/components/SignInAndOutButton';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -47,11 +47,7 @@ export default async function RootLayout({
                   <span className="capitalize">{category.name}</span>
                 </NavLink>
               ))}
-              <Button variant={'secondary'} size={'sm'} asChild>
-                <Link className="" href="/login">
-                  log In
-                </Link>
-              </Button>
+              <SignInAndOutButtons />
             </Nav>
           </nav>
         </header>
