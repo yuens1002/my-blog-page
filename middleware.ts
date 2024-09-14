@@ -1,15 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import isUserAuthenticated from './lib/isAuthenticated';
+import { withAuth } from '@kinde-oss/kinde-auth-nextjs/middleware';
 
-// This function can be marked `async` if using `await` inside
-export async function middleware(request: NextRequest) {
-  const isLoggedIn = await isUserAuthenticated();
-
-  if (!isLoggedIn)
-    return NextResponse.redirect(
-      new URL('/api/auth/login', request.url)
-    );
+export default function middleware(req: Request) {
+  return withAuth(req, { isReturnToCurrentPage: true });
 }
 
 // See "Matching Paths" below to learn more
