@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import db from '@/prisma/client';
 import type { dummyPost } from '../lib/types';
 import { slugify } from '../lib/utils';
-
-const db = new PrismaClient();
 
 require('dotenv').config({
   path: ['.env'],
