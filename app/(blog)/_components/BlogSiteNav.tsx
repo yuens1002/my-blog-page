@@ -9,10 +9,10 @@ import {
 import { ChevronDownIcon } from 'lucide-react';
 import Link from 'next/link';
 import LinkButton from '@/components/LinkButton';
-import prisma from '@/prisma/prismaDb';
+import db from '@/prisma/client';
 
 export default async function BlogSiteNav() {
-  const categories = await prisma.category.findMany();
+  const categories = await db.category.findMany();
   return (
     <>
       <LinkButton href="/" className="text-primary-foreground">
