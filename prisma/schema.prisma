@@ -57,6 +57,7 @@ model Category {
 enum Role {
   USER
   ADMIN
+  AUTHOR
 }
 
 enum Status {
