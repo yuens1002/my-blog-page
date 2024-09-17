@@ -38,3 +38,7 @@ next-env.d.ts
 
 #seed
 prisma/seed.ts
+
+#temp
+/temp
+
