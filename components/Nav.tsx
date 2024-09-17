@@ -11,7 +11,9 @@ type NavProps = {
 
 export function Nav({ children }: NavProps) {
   return (
-    <nav className="flex h-full items-center gap-8">{children}</nav>
+    <nav className="lg:flex h-full items-center gap-8 hidden">
+      {children}
+    </nav>
   );
 }
 
