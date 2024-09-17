@@ -13,7 +13,7 @@ export default async function SignInOutButton({
   return (
     <Button variant={'secondary'} size={size} {...props} asChild>
       {isLoggedIn ? (
-        <LogoutLink>Sign out</LogoutLink>
+        <LogoutLink postLogoutRedirectURL="/">Sign out</LogoutLink>
       ) : (
         <LoginLink>Sign in</LoginLink>
       )}
