@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "postbuild": "node scripts/add-urls-to-kinde.ts"
+    "postbuild": "vite-node scripts/add-urls-to-kinde.ts"
   },
   "dependencies": {
     "@kinde-oss/kinde-auth-nextjs": "^2.3.8",
