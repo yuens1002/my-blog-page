@@ -9,27 +9,26 @@ import SignInAndOutButton from '@/components/SignInOutButton';
 export default async function SiteHeader() {
   const isLoggedIn = await isUserAuthenticated();
   return (
-    <header className="bg-primary">
-      <nav className="flex justify-between items-center p-4">
-        <SiteLogo href="/" borderColor="border-indigo-600">
-          <p className="text-slate-50 leading-[1.1] text-xl">
-            <span className="font-thin">my</span>
-            <span>blog</span>
+    <header className="border-b border-b-primary/15 bg-background">
+      <nav className="sm-hidden flex justify-between items-center p-4">
+        <SiteLogo href="/">
+          <p className="leading-[1.1] text-xl font-light">
+            <span className="font-thin">{'<'}y</span>our
+            <span className="font-extrabold">blog</span>
+            <span className="font-thin">{' />'}</span>
           </p>
         </SiteLogo>
         <Nav>
           <BlogSiteNav />
           {isLoggedIn && (
-            <LinkButton
-              href="/dashboard"
-              className="text-primary-foreground"
-            >
+            <LinkButton href="/dashboard" variant={'outline'}>
               <UserRoundPen className="mr-2 h-4 w-4" />
               back to dashboard
             </LinkButton>
           )}
           <SignInAndOutButton />
         </Nav>
+        <div className="lg:hidden">menu during mobile view</div>
       </nav>
     </header>
   );

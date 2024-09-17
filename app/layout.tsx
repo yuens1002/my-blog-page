@@ -23,14 +23,17 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          'bg-background h-screen font-sans antialiased',
+          'bg-slate-50 h-screen font-sans antialiased',
           inter.variable
         )}
       >
         <div className="flex flex-col min-h-full">
           {children}
           <footer className="text-xs text-center py-4 mt-auto bg-slate-100">
-            <p>&copy; 2024 myBlog Page</p>
+            <p>
+              &copy; 2024 {'<'}your
+              <span className="font-bold">blog</span> {' />'}
+            </p>
           </footer>
         </div>
       </body>

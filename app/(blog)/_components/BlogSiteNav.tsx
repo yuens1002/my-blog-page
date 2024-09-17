@@ -15,14 +15,9 @@ export default async function BlogSiteNav() {
   const categories = await db.category.findMany();
   return (
     <>
-      <LinkButton href="/" className="text-primary-foreground">
-        Home
-      </LinkButton>
+      <LinkButton href="/">Home</LinkButton>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          asChild
-          className="group flex gap-2 text-primary-foreground"
-        >
+        <DropdownMenuTrigger asChild className="group flex gap-2">
           <Button variant="link">
             Categories
             <ChevronDownIcon className="h-4 w-4 group-data-[state=open]:rotate-180 group-data-[state=open]:animate-in transition" />
@@ -40,9 +35,7 @@ export default async function BlogSiteNav() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <LinkButton href="/contact" className="text-primary-foreground">
-        Contact Us
-      </LinkButton>
+      <LinkButton href="/contact">Contact Us</LinkButton>
     </>
   );
 }

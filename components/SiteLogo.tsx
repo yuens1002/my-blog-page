@@ -1,22 +1,18 @@
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import Link, { LinkProps } from 'next/link';
 
 type SiteLogoTypes = {
-  href: string;
-  borderColor?: string;
   children: React.ReactNode;
-};
+} & React.ComponentProps<'a'> &
+  LinkProps;
 
 export default function SiteLogo({
   href,
-  borderColor,
+  className,
   children,
 }: SiteLogoTypes) {
   return (
-    <Link
-      href={href}
-      className={cn('flex flex-col border-r-2 pr-4', borderColor)}
-    >
+    <Link href={href} className={cn('flex flex-col pr-4', className)}>
       {children}
     </Link>
   );

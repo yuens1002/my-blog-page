@@ -8,7 +8,7 @@ export default function DashboardHeader() {
   return (
     <header className={'bg-indigo-700'}>
       <nav className="flex justify-between items-center p-4">
-        <SiteLogo href="/dashboard" borderColor="border-fuchsia-600">
+        <SiteLogo href="/dashboard">
           <p className="text-primary-foreground leading-[1.1] font-thin">
             <span className="text-xl text-muted">my</span>
             <span className="text-xl font-normal">blog</span>
