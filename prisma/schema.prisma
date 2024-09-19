@@ -51,7 +51,7 @@ model Stats {
 model Category {
   id    String @id @default(uuid())
   posts Post[]
-  name  String @unique
+  label String @unique
   slug  String @unique
 }
 
