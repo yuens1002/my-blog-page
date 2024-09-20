@@ -13,7 +13,13 @@ export default function DashboardHeader() {
       <SiteLogo href="/dashboard" />
       <Nav className="md:flex items-center gap-x-2 hidden">
         <LinkButton href="/" variant="outline">
-          <PanelTop className="h-4 w-4" /> Visit Blog
+          <PanelTop
+            width="1.5rem"
+            height="1.5rem"
+            aria-hidden
+            className="pr-2"
+          />
+          Visit Blog
         </LinkButton>
         <SignInOutButton />
       </Nav>
