@@ -9,7 +9,7 @@ import { Menu } from 'lucide-react';
 
 type MobileNavSheetProps = {
   children: React.ReactNode;
-};
+} & React.ComponentPropsWithoutRef<'div'>;
 
 export default function MobileNavSheet({
   children,

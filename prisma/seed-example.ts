@@ -77,10 +77,10 @@ async function seed({
                 connectOrCreate: [
                   ...post.categories.map((category) => ({
                     where: {
-                      name: category,
+                      label: category,
                     },
                     create: {
-                      name: category,
+                      label: category,
                       slug: slugify(category),
                     },
                   })),

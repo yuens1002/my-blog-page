@@ -65,7 +65,7 @@ export default async function BlogMenuItems() {
         },
         {
           icon: {
-            name: 'log-in',
+            name: 'log-out',
             width: '1em',
             height: '1em',
             className: 'aria-hidden',
@@ -76,7 +76,7 @@ export default async function BlogMenuItems() {
       )
     : navList.push({
         icon: {
-          name: 'log-out',
+          name: 'log-in',
           width: '1em',
           height: '1em',
           className: 'aria-hidden',

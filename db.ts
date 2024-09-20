@@ -3,6 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { Pool } from '@neondatabase/serverless';
 
+require('dotenv').config({
+  path: ['.env'],
+});
+
 export const runtime = 'edge';
 
 async function main() {

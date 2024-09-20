@@ -1,14 +1,14 @@
 'use client';
-import { cn } from '@/lib/utils';
+import cn from '@/lib/cn';
 import Link from 'next/link';
 import { SheetClose } from '@/components/ui/sheet';
-import { Fragment } from 'react';
+import { type ComponentPropsWithoutRef, Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import Icon, { IconProps } from './Icon';
 
 type LinkListProps = {
   links: LinkItem[];
-};
+} & ComponentPropsWithoutRef<'ul'>;
 
 export type LinkItem = {
   icon?: IconProps;
@@ -17,9 +17,14 @@ export type LinkItem = {
   subNav?: LinkItem[];
 };
 
-export default function LinkList({ links }: LinkListProps) {
+export default function LinkList({
+  links,
+  className,
+}: LinkListProps) {
   return (
-    <ul className="text-lg flex flex-col text-primary">
+    <ul
+      className={cn('text-lg flex flex-col text-primary', className)}
+    >
       {links.map(({ icon, href, label, subNav }) => (
         <Fragment key={label}>
           {href && icon ? (

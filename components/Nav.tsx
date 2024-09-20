@@ -3,11 +3,7 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  ComponentPropsWithoutRef,
-  ReactElement,
-  ReactNode,
-} from 'react';
+import { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 type NavProps = {
   children: ReactNode;
