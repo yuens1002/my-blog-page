@@ -4,6 +4,7 @@ import {
   LoginLink,
   LogoutLink,
 } from '@kinde-oss/kinde-auth-nextjs/components';
+import { LogInIcon, LogOutIcon } from 'lucide-react';
 
 export default async function SignInOutButton({
   size = 'sm',
@@ -11,11 +12,19 @@ export default async function SignInOutButton({
 }: ButtonProps) {
   const isLoggedIn = await isUserAuthenticated();
   return (
-    <Button variant={'secondary'} size={size} {...props} asChild>
+    <Button variant="secondary" size={size} {...props} asChild>
       {isLoggedIn ? (
-        <LogoutLink postLogoutRedirectURL="/">Sign out</LogoutLink>
+        <LogoutLink>
+          <div className="flex items-center gap-x-2">
+            <LogOutIcon width="1em" height="1em" /> Sign Out
+          </div>
+        </LogoutLink>
       ) : (
-        <LoginLink>Sign in</LoginLink>
+        <LoginLink>
+          <div className="flex items-center gap-x-2">
+            <LogInIcon width="1em" height="1em" /> Sign In
+          </div>
+        </LoginLink>
       )}
     </Button>
   );

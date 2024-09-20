@@ -7,11 +7,11 @@ import { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 type NavProps = {
   children: ReactNode;
-};
+} & ComponentPropsWithoutRef<'nav'>;
 
-export function Nav({ children }: NavProps) {
+export function Nav({ children, className }: NavProps) {
   return (
-    <nav className="lg:flex h-full items-center gap-8 hidden">
+    <nav className={cn('h-full items-center gap-8', className)}>
       {children}
     </nav>
   );
