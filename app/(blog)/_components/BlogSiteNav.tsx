@@ -24,11 +24,11 @@ export default async function BlogSiteNav() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {categories.map(({ id, slug, name }) => (
+          {categories.map(({ id, slug, label }) => (
             <Fragment key={id}>
               <DropdownMenuItem asChild>
                 <Link href={`/${slug}`} className="capitalize">
-                  {name}
+                  {label}
                 </Link>
               </DropdownMenuItem>
             </Fragment>
