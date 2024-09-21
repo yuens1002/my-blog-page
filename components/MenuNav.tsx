@@ -6,26 +6,26 @@ import { type ComponentPropsWithoutRef, Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import Icon, { IconProps } from './Icon';
 
-type LinkListProps = {
-  links: LinkItem[];
+type MenuNavProps = {
+  NavItems: NavItem[];
 } & ComponentPropsWithoutRef<'ul'>;
 
-export type LinkItem = {
+export type NavItem = {
   icon?: IconProps;
   href?: string;
   label: string;
-  subNav?: LinkItem[];
+  subNav?: NavItem[];
 };
 
-export default function LinkList({
-  links,
+export default function MenuNav({
+  NavItems,
   className,
-}: LinkListProps) {
+}: MenuNavProps) {
   return (
     <ul
       className={cn('text-lg flex flex-col text-primary', className)}
     >
-      {links.map(({ icon, href, label, subNav }) => (
+      {NavItems.map(({ icon, href, label, subNav }) => (
         <Fragment key={label}>
           {href && icon ? (
             <LinkListItem icon={icon} href={href} isSubNav={false}>

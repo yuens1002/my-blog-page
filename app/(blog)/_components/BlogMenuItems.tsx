@@ -1,7 +1,7 @@
 import React from 'react';
 import isUserAuthenticated from '@/lib/isAuthenticated';
 import { notFound } from 'next/navigation';
-import LinkList, { type LinkItem } from '@/components/LinkList';
+import MenuNav, { type NavItem } from '@/components/MenuNav';
 
 import {
   preloadCategories,
@@ -10,7 +10,7 @@ import {
 
 export default async function BlogMenuItems() {
   const isLoggedIn = await isUserAuthenticated();
-  const navList: LinkItem[] = [];
+  const navList: NavItem[] = [];
   preloadCategories();
   const categories = await getCachedCategories();
   if (!categories) notFound();
@@ -84,5 +84,5 @@ export default async function BlogMenuItems() {
         href: '/api/auth/login',
         label: 'Sign In',
       });
-  return <LinkList links={navList} />;
+  return <MenuNav NavItems={navList} />;
 }

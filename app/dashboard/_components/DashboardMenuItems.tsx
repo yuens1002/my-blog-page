@@ -1,7 +1,7 @@
-import LinkList, { type LinkItem } from '@/components/LinkList';
+import MenuNav, { type NavItem } from '@/components/MenuNav';
 
 export default function DashboardMenuItems() {
-  const navList: LinkItem[] = [
+  const navList: NavItem[] = [
     {
       icon: {
         name: 'circle-gauge',
@@ -89,5 +89,5 @@ export default function DashboardMenuItems() {
       label: 'Sign Out',
     },
   ];
-  return <LinkList links={navList} />;
+  return <MenuNav NavItems={navList} />;
 }
