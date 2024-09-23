@@ -17,30 +17,40 @@ export default function MenuItem({
   const pathname = usePathname();
   const linkIsCurrent = href === pathname;
   return (
-    // SheetClose doesn't close the sheet when the linked is clicked
-    // would be great to reuse the ItemNav component here
-    <SheetClose asChild>
-      <Link href={href}>
-        {isSubNav ? (
+    <>
+      {isSubNav ? (
+        linkIsCurrent ? (
           <ListSubItem linkIsCurrent={linkIsCurrent}>
             {children}
           </ListSubItem>
         ) : (
-          icon && (
-            <ListItem
-              icon={icon}
-              linkIsCurrent={linkIsCurrent}
-              className={cn(
-                !linkIsCurrent
-                  ? 'hover:bg-primary/5'
-                  : 'bg-primary/10'
-              )}
-            >
-              {children}
-            </ListItem>
-          )
-        )}
-      </Link>
-    </SheetClose>
+          <SheetClose asChild>
+            <Link href={href}>
+              <ListSubItem linkIsCurrent={linkIsCurrent}>
+                {children}
+              </ListSubItem>
+            </Link>
+          </SheetClose>
+        )
+      ) : (
+        icon && (
+          <SheetClose asChild>
+            <Link href={href}>
+              <ListItem
+                icon={icon}
+                linkIsCurrent={linkIsCurrent}
+                className={cn(
+                  !linkIsCurrent
+                    ? 'hover:bg-primary/5'
+                    : 'bg-primary/10'
+                )}
+              >
+                {children}
+              </ListItem>
+            </Link>
+          </SheetClose>
+        )
+      )}
+    </>
   );
 }

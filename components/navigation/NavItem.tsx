@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import ListSubItem from '@/components/navigation/ListSubItem';
 import ListItem from '@/components/navigation/ListItem';
 import cn from '@/lib/cn';
-import { SheetClose } from '../ui/sheet';
 
 export default function NavItem({
   children,
@@ -17,24 +16,36 @@ export default function NavItem({
   const pathname = usePathname();
   const linkIsCurrent = href === pathname;
   return (
-    <Link href={href}>
+    <>
       {isSubNav ? (
-        <ListSubItem linkIsCurrent={linkIsCurrent}>
-          {children}
-        </ListSubItem>
+        linkIsCurrent ? (
+          <ListSubItem linkIsCurrent={linkIsCurrent}>
+            {children}
+          </ListSubItem>
+        ) : (
+          <Link href={href}>
+            <ListSubItem linkIsCurrent={linkIsCurrent}>
+              {children}
+            </ListSubItem>
+          </Link>
+        )
       ) : (
         icon && (
-          <ListItem
-            icon={icon}
-            linkIsCurrent={linkIsCurrent}
-            className={cn(
-              !linkIsCurrent ? 'hover:bg-primary/5' : 'bg-primary/10'
-            )}
-          >
-            {children}
-          </ListItem>
+          <Link href={href}>
+            <ListItem
+              icon={icon}
+              linkIsCurrent={linkIsCurrent}
+              className={cn(
+                !linkIsCurrent
+                  ? 'hover:bg-primary/5'
+                  : 'bg-primary/10'
+              )}
+            >
+              {children}
+            </ListItem>
+          </Link>
         )
       )}
-    </Link>
+    </>
   );
 }

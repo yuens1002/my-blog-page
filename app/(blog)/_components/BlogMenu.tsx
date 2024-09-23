@@ -6,7 +6,7 @@ import {
   getCachedCategories,
 } from '@/DAL/utils/get-categories';
 import MenuNav from '@/components/navigation/MenuNav';
-import MenuItem from '@/components/navigation/NavItem';
+import MenuItem from '@/components/navigation/MenuItem';
 
 export default async function BlogMenu() {
   const isLoggedIn = await isUserAuthenticated();
