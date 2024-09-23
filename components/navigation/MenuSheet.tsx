@@ -3,6 +3,7 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
@@ -21,12 +22,16 @@ export default function MobileNavSheet({
           <Menu size={24} className="translate-y-[0.23rem]" /> Menu
         </div>
       </SheetTrigger>
-      <SheetContent side="right">
-        <SheetHeader>
-          <SheetDescription className="pt-4">
-            {children}
+      <SheetContent side="right" aria-describedby="navigation links">
+        <SheetHeader className="pb-8">
+          <SheetTitle className="sr-only">
+            mobile site navigation
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            navigation links
           </SheetDescription>
         </SheetHeader>
+        {children}
       </SheetContent>
     </Sheet>
   );

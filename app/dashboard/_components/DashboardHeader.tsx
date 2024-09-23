@@ -4,8 +4,8 @@ import LinkButton from '@/components/LinkButton';
 import SignInOutButton from '@/components/SignInOutButton';
 import SiteLogo from '@/components/SiteLogo';
 import PageHeader from '@/components/PageHeader';
-import MobileNavSheet from '@/components/MobileNavSheet';
-import DashboardMenuItems from './DashboardMenuItems';
+import MenuSheet from '@/components/navigation/MenuSheet';
+import DashboardMenu from './DashboardMenu';
 
 export default function DashboardHeader() {
   return (
@@ -24,9 +24,9 @@ export default function DashboardHeader() {
         <SignInOutButton />
       </Nav>
       <Nav className="md:hidden">
-        <MobileNavSheet>
-          <DashboardMenuItems />
-        </MobileNavSheet>
+        <MenuSheet>
+          <DashboardMenu />
+        </MenuSheet>
       </Nav>
     </PageHeader>
   );
