@@ -5,9 +5,9 @@ import { Nav } from '@/components/Nav';
 import LinkButton from '@/components/LinkButton';
 import { UserRoundPen } from 'lucide-react';
 import SignInOutButton from '@/components/SignInOutButton';
-import MobileNavSheet from '@/components/MobileNavSheet';
+import MenuSheet from '@/components/navigation/MenuSheet';
 import PageHeader from '@/components/PageHeader';
-import BlogMenuItems from './BlogMenuItems';
+import BlogMenu from './BlogMenu';
 
 export default async function SiteHeader() {
   const isLoggedIn = await isUserAuthenticated();
@@ -26,9 +26,9 @@ export default async function SiteHeader() {
         <SignInOutButton />
       </Nav>
       <Nav className="lg:hidden">
-        <MobileNavSheet>
-          <BlogMenuItems />
-        </MobileNavSheet>
+        <MenuSheet>
+          <BlogMenu />
+        </MenuSheet>
       </Nav>
     </PageHeader>
   );

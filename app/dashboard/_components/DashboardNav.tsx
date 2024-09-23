@@ -1,20 +1,9 @@
-'use client';
+import { navList } from '../const';
+import MenuNav from '@/components/navigation/MenuNav';
+import NavItem from '@/components/navigation/NavItem';
 
-import { cn } from '@/lib/utils';
-import {
-  CircleGauge,
-  File,
-  Settings,
-  TrendingUp,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Fragment } from 'react';
-
-export default function DashboardNav() {
+export default function DashBoardNav() {
   return (
-    <>
-      <span>Dashboard Nav</span>
-    </>
+    <MenuNav items={navList} ItemComp={NavItem} className="px-4" />
   );
 }

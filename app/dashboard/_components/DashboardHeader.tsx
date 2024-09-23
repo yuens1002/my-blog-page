@@ -4,8 +4,8 @@ import LinkButton from '@/components/LinkButton';
 import SignInOutButton from '@/components/SignInOutButton';
 import SiteLogo from '@/components/SiteLogo';
 import PageHeader from '@/components/PageHeader';
-import MobileNavSheet from '@/components/MobileNavSheet';
-import DashboardMenuItems from './DashboardMenuItems';
+import MenuSheet from '@/components/navigation/MenuSheet';
+import DashboardMenu from './DashboardMenu';
 
 export default function DashboardHeader() {
   return (
@@ -13,14 +13,20 @@ export default function DashboardHeader() {
       <SiteLogo href="/dashboard" />
       <Nav className="md:flex items-center gap-x-2 hidden">
         <LinkButton href="/" variant="outline">
-          <PanelTop className="h-4 w-4" /> Visit Blog
+          <PanelTop
+            width="1.5rem"
+            height="1.5rem"
+            aria-hidden
+            className="pr-2"
+          />
+          Visit Blog
         </LinkButton>
         <SignInOutButton />
       </Nav>
       <Nav className="md:hidden">
-        <MobileNavSheet>
-          <DashboardMenuItems />
-        </MobileNavSheet>
+        <MenuSheet>
+          <DashboardMenu />
+        </MenuSheet>
       </Nav>
     </PageHeader>
   );

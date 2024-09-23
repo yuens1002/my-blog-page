@@ -8,7 +8,12 @@ export default function PageHeader({
   children: React.ReactNode;
 }) {
   return (
-    <header className={cn('bg-white drop-shadow-sm', className)}>
+    <header
+      className={cn(
+        'bg-background drop-shadow-sm dark:border-b dark:border-b-secondary',
+        className
+      )}
+    >
       <nav className="flex justify-between items-center p-4">
         {children}
       </nav>
