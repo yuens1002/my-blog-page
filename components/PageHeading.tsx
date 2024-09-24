@@ -1,10 +1,18 @@
+import cn from '@/lib/cn';
 import type { ReactNode } from 'react';
 
 type PageHeadingProps = {
   children: ReactNode;
-};
-export default function PageHeading({ children }: PageHeadingProps) {
+} & React.ComponentPropsWithoutRef<'h1'>;
+export default function PageHeading({
+  children,
+  className,
+}: PageHeadingProps) {
   return (
-    <h1 className="text-4xl font-bold tracking-tight">{children}</h1>
+    <h1
+      className={cn('text-4xl font-bold tracking-tight', className)}
+    >
+      {children}
+    </h1>
   );
 }
