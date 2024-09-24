@@ -1,6 +1,6 @@
 'use client';
 
-import cn from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { SheetClose } from '@/components/ui/sheet';
 import { usePathname } from 'next/navigation';
