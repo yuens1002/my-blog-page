@@ -3,6 +3,7 @@
 import PageHeading from '@/components/PageHeading';
 import SiteLogo from '@/components/SiteLogo';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
@@ -15,7 +16,14 @@ export default function NotFound() {
           <PageHeading className="text-8xl">Kah Poh!</PageHeading>
           <p>
             it seems you have wandered far far into the unknown, try
-            the homepage or reloading page to find your way back...
+            the{' '}
+            <Link
+              href="/"
+              className="underline underline-offset-5 font-semibold"
+            >
+              homepage
+            </Link>{' '}
+            or reloading page to find your way back...
           </p>
         </div>
         <Button

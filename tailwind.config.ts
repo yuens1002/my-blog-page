@@ -11,6 +11,9 @@ const config = {
   ],
   prefix: '',
   theme: {
+    textUnderlineOffset: {
+      5: '.4em',
+    },
     container: {
       center: true,
       padding: '2rem',
