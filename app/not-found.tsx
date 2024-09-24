@@ -29,10 +29,7 @@ export default function NotFound() {
         <Button
           type="button"
           size={'lg'}
-          onClick={
-            // Attempt to recover by trying to re-render the segment
-            () => router.refresh()
-          }
+          onClick={() => router.refresh()}
         >
           Reload Page
         </Button>

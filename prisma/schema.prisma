@@ -24,6 +24,7 @@ model User {
 model Post {
   id              String     @id @default(uuid())
   title           String     @unique
+  excerpt         String?
   content         String?
   imageURL        String?
   unsplashPhotoId String?
@@ -37,6 +38,7 @@ model Post {
   updatedAt       DateTime   @updatedAt
   publishedAt     DateTime?
   status          Status     @default(DRAFT)
+  featured        Boolean    @default(false)
 }
 
 model Stats {
