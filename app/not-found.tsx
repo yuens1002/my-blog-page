@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 export default function NotFound() {
   const router = useRouter();
   return (
-    <div className="container flex flex-col h-[60vh] w-1/3 items-center justify-center">
+    <main className="container flex flex-col h-[60vh] w-1/3 items-center justify-center">
       <div className="flex flex-col gap-y-8">
         <div>
           <SiteLogo href="/" className="pb-4" />
@@ -37,6 +37,6 @@ export default function NotFound() {
           Reload Page
         </Button>
       </div>
-    </div>
+    </main>
   );
 }
