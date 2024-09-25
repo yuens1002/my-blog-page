@@ -24,7 +24,7 @@ export default function UnsplashPhotoPreview({
       blurDataURL={blurHashToDataURL(blur_hash)}
       className={cn(
         'object-cover',
-        width > height ? 'w-full' : 'aspect-9/16'
+        width > height ? 'w-full' : 'aspect-4/3'
       )}
     />
   );

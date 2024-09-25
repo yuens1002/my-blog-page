@@ -2,6 +2,7 @@
 
 import { getUnsplashPhotoWithCache } from '@/DAL/unsplash';
 import { blurHashToDataURL } from '@/lib/blurHashBase64';
+import type { UnsplashPhoto as UnsplashPhotoType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -32,7 +33,7 @@ export default async function UnsplashPhoto({
 
   const {
     data: { user, urls, blur_hash, width, height },
-  } = await res.json();
+  } = (await res.json()) as { data: UnsplashPhotoType };
   return (
     <>
       <div
@@ -43,7 +44,10 @@ export default async function UnsplashPhoto({
       >
         <Image
           priority
-          style={{ objectFit: 'cover' }}
+          className={cn(
+            'object-cover',
+            width > height ? 'w-full' : 'aspect-3/4'
+          )}
           width={width}
           height={height}
           src={urls.regular}
