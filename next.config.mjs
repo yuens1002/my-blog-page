@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        hostname: '**.unsplash.com',
+      },
+      {
+        hostname: 'dummyimage.com',
+      },
+    ],
+  },
   transpilePackages: ['lucide-react'],
   typescript: {
     ignoreBuildErrors: true,

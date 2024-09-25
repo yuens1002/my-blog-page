@@ -1,4 +1,5 @@
 import { IconProps } from '@/components/Icon';
+import { z } from 'zod';
 
 export type dummyPost = {
   title: string;
@@ -30,3 +31,23 @@ export type ItemComponentProps = {
   href: string;
   isSubNav: boolean;
 };
+
+export const createPhotoSchema = z.object({
+  id: z.string(),
+  width: z.number(),
+  height: z.number(),
+  blur_hash: z.string(),
+  urls: z.object({
+    full: z.string(),
+    regular: z.string(),
+    raw: z.string(),
+    small: z.string(),
+  }),
+  color: z.string().or(z.null()),
+  user: z.object({
+    username: z.string(),
+    name: z.string(),
+  }),
+});
+
+export type UnsplashPhoto = z.infer<typeof createPhotoSchema>;

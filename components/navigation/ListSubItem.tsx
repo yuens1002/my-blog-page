@@ -1,5 +1,4 @@
-import React from 'react';
-import cn from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 type ListSubItemProps = {
   linkIsCurrent?: boolean;
@@ -15,6 +14,7 @@ export default function ListSubItem({
     <li
       className={cn(
         'flex items-center p-4 rounded-r-sm border-l border-l-primary/10',
+        className,
         linkIsCurrent
           ? 'border-l-0 bg-primary/10'
           : 'hover:bg-primary/5'

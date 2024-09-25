@@ -9,10 +9,16 @@ import {
 import { ChevronDownIcon } from 'lucide-react';
 import Link from 'next/link';
 import LinkButton from '@/components/LinkButton';
-import db from '@/prisma/client';
+import {
+  getCachedCategories,
+  preloadCategories,
+} from '@/DAL/utils/get-categories';
+import { notFound } from 'next/navigation';
 
 export default async function BlogSiteNav() {
-  const categories = await db.category.findMany();
+  preloadCategories();
+  const categories = await getCachedCategories();
+  if (!categories) notFound();
   return (
     <>
       <LinkButton href="/">Home</LinkButton>

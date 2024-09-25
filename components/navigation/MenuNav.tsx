@@ -1,6 +1,6 @@
 'use client';
 
-import cn from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { type ComponentPropsWithoutRef, Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import ListItem from '@/components/navigation/ListItem';

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import ListSubItem from '@/components/navigation/ListSubItem';
 import ListItem from '@/components/navigation/ListItem';
-import cn from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 export default function NavItem({
   children,

@@ -11,6 +11,12 @@ const config = {
   ],
   prefix: '',
   theme: {
+    aspectRatio: {
+      '3/4': '3 / 4',
+      '4/3': '4 / 3',
+      '9/16': '9 / 16',
+      '16/9': '16 / 9',
+    },
     container: {
       center: true,
       padding: '2rem',
