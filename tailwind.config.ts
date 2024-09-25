@@ -11,8 +11,10 @@ const config = {
   ],
   prefix: '',
   theme: {
-    textUnderlineOffset: {
-      5: '.4em',
+    aspectRatio: {
+      '3/4': '3 / 4',
+      '4/3': '4 / 3',
+      '9/16': '9 / 16',
     },
     container: {
       center: true,

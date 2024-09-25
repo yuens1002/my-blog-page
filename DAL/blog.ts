@@ -35,9 +35,10 @@ export async function getFeaturedPosts() {
       orderBy: {
         publishedAt: 'desc',
       },
-      take: 3,
+      take: 6,
       include: {
         author: true,
+        categories: true,
       },
     });
   } catch (error) {
