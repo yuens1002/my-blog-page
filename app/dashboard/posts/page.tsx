@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function PostsPage() {
-  return <div>PostsPage</div>;
+  return <div>Post Management Page</div>;
 }
