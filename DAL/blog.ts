@@ -66,6 +66,7 @@ export type BlogByUniquePropResponse = {
   author: {
     firstName: string;
     lastName: string;
+    id: string;
   };
 };
 
@@ -81,6 +82,7 @@ const getPostSelections = {
     select: {
       firstName: true,
       lastName: true,
+      id: true,
     },
   },
 };
