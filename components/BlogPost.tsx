@@ -30,7 +30,10 @@ export default function BlogPost({
       <div className="container px-4 py-4 md:py-8">
         <PageHeading>{title}</PageHeading>
         <h6 className="flex flex-col gap-y-1 border-l-8 border-l-primary/10 mt-4 pl-4 md:border-l-0 md:flex-row md:gap-4 md:pl-0 text-muted-foreground">
-          <span>Written by: {authorName}</span>
+          <span>
+            Written by:{' '}
+            <span className="font-bold">{authorName}</span>
+          </span>
           <span>
             <Separator orientation="vertical" />
           </span>
