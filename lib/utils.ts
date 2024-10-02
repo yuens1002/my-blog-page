@@ -14,3 +14,12 @@ export function slugify(str: string): string {
     .replace(/-+/g, '-'); // remove consecutive hyphens
   return str;
 }
+
+export function calculateReadingTime(text: string): number {
+  const WPM = 238; // Average reading time in words per minute
+  const words = text.split(/\s+/);
+  const wordCount = words.length;
+  const readingTime = wordCount / WPM;
+
+  return Math.ceil(readingTime);
+}
