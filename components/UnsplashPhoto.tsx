@@ -8,10 +8,12 @@ import Image from 'next/image';
 
 type UnsplashPhotoProps = {
   photoId: string;
+  paddingOnCreditPlacement?: boolean;
 } & React.HTMLProps<HTMLDivElement>;
 
 export default async function UnsplashPhoto({
   photoId,
+  paddingOnCreditPlacement = false,
   className,
 }: UnsplashPhotoProps) {
   // refactor this to confirm Response (!ok) type construction
@@ -56,7 +58,12 @@ export default async function UnsplashPhoto({
           blurDataURL={blurHashToDataURL(blur_hash)}
         />
       </div>
-      <div className="text-xs text-right">
+      <div
+        className={cn(
+          'text-xs text-right',
+          paddingOnCreditPlacement && 'pr-4'
+        )}
+      >
         Photo by{' '}
         <a
           className="font-semibold hover:underline"
