@@ -99,7 +99,6 @@ export async function getBlogByUniqueProp(
     });
   } catch (error) {
     console.error(error);
-    throw new Error('An error occurred while fetching blog post');
   }
 }
 
