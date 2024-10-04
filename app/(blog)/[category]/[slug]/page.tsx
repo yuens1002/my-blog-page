@@ -2,6 +2,8 @@ import BlogPost from '@/components/BlogPost';
 import { getBlogByUniqueProp, getBlogRoutes } from '@/DAL/blog';
 import { Category, Post } from '@prisma/client';
 
+export const dynamicParams = false;
+
 type PostPageProps = {
   params: {
     slug: string;
