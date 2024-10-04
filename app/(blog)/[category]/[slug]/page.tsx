@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 
 export const dynamicParams = false;
 
+export const dynamicParams = false;
+
 type PostPageProps = {
   params: {
     slug: string;
