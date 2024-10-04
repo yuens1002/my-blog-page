@@ -98,8 +98,13 @@ export async function getBlogByUniqueProp(
       select: getPostSelections,
     });
   } catch (error) {
-    console.error(error);
-    throw new Error('An error occurred while fetching blog post');
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while getting a specific post.'
+      );
+    }
   }
 }
 
@@ -113,7 +118,12 @@ export async function getBlogRoutes() {
       },
     });
   } catch (error) {
-    console.error(error);
-    throw new Error('An error occurred while fetching blog routes');
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while getting route to posts.'
+      );
+    }
   }
 }
