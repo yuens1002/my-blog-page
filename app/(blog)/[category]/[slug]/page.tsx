@@ -1,9 +1,6 @@
 import BlogPost from '@/components/BlogPost';
 import { getBlogByUniqueProp, getBlogRoutes } from '@/DAL/blog';
 import { Category, Post } from '@prisma/client';
-import { notFound } from 'next/navigation';
-
-export const dynamicParams = false;
 
 export const dynamicParams = false;
 
@@ -36,6 +33,5 @@ export async function generateStaticParams() {
 
 export default async function BlogPage({ params }: PostPageProps) {
   const post = await getBlogByUniqueProp({ slug: params.slug });
-  if (!post) notFound();
   return <BlogPost post={post} />;
 }
