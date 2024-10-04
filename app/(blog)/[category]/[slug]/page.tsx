@@ -18,7 +18,8 @@ type NextRouteKeys = {
 
 export async function generateStaticParams() {
   const posts = await getBlogRoutes();
-
+  if (!posts)
+    return <p>Let&#39;s write a post and revisit this page...</p>;
   const postRoutes = posts.reduce((init, post) => {
     post.status === 'PUBLISHED' &&
       post.categories.forEach((category) => {
