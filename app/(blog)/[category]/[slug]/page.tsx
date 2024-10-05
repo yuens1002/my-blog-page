@@ -18,8 +18,11 @@ type NextRouteKeys = {
 
 export async function generateStaticParams() {
   const posts = await getBlogRoutes();
+<<<<<<< HEAD
   if (!posts)
     return <p>Let&#39;s write a post and revisit this page...</p>;
+=======
+>>>>>>> 4831f02 (default to 404 when route isnt valid)
   const postRoutes = posts.reduce((init, post) => {
     post.status === 'PUBLISHED' &&
       post.categories.forEach((category) => {
@@ -30,7 +33,7 @@ export async function generateStaticParams() {
       });
     return init;
   }, [] as NextRouteKeys[]);
-
+  console.log('🚀 ~ generateStaticParams ~ postRoutes:', postRoutes);
   return postRoutes;
 }
 

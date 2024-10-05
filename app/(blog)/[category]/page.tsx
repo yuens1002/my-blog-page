@@ -1,4 +1,7 @@
 import PageHeading from '@/components/PageHeading';
+import { getCategoryRoutes } from '@/DAL/blog';
+
+export const dynamicParams = false;
 
 type CategoryPageProps = {
   params: {
@@ -6,8 +9,19 @@ type CategoryPageProps = {
   };
 };
 
+export async function generateStaticParams() {
+  const categorySlugs = await getCategoryRoutes();
+  return categorySlugs.reduce((init, postCategories) => {
+    postCategories.categories.forEach((category) => {
+      if (!init.find((item) => item.category === category.slug)) {
+        init.push({ category: category.slug });
+      }
+    });
+    return init;
+  }, [] as CategoryPageProps['params'][]);
+}
+
 export default function CategoryPage({ params }: CategoryPageProps) {
-  console.log('params', params);
   return (
     <PageHeading>
       {params.category.split('%20').join(' ')}
