@@ -5,12 +5,6 @@ import { notFound } from 'next/navigation';
 
 export const dynamicParams = false;
 
-type PostPageProps = {
-  params: {
-    slug: string;
-  };
-};
-
 type NextRouteKeys = {
   category: Category['slug'];
   slug: Post['slug'];
@@ -34,7 +28,13 @@ export async function generateStaticParams() {
   return postRoutes;
 }
 
-export default async function BlogPage({ params }: PostPageProps) {
+type BlogPageProps = {
+  params: {
+    slug: string;
+  };
+};
+
+export default async function BlogPage({ params }: BlogPageProps) {
   const post = await getBlogByUniqueProp({ slug: params.slug });
   if (!post) notFound();
   return <BlogPost post={post} />;
