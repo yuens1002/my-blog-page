@@ -30,8 +30,6 @@ export async function generateStaticParams() {
       });
     return init;
   }, [] as NextRouteKeys[]);
-  console.log('🚀 ~ generateStaticParams ~ postRoutes:', postRoutes);
-  return postRoutes;
 }
 
 export default async function BlogPage({ params }: PostPageProps) {
