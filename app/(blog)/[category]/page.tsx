@@ -11,7 +11,7 @@ type CategoryPageProps = {
 
 export async function generateStaticParams() {
   const categorySlugs = await getCategoryRoutes();
-  return categorySlugs.reduce((init, postCategories) => {
+  const slugs = categorySlugs.reduce((init, postCategories) => {
     postCategories.categories.forEach((category) => {
       if (!init.find((item) => item.category === category.slug)) {
         init.push({ category: category.slug });
@@ -19,6 +19,8 @@ export async function generateStaticParams() {
     });
     return init;
   }, [] as CategoryPageProps['params'][]);
+  console.log('🚀 ~ slugs ~ slugs:', slugs);
+  return slugs;
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
