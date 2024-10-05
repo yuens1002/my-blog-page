@@ -117,3 +117,18 @@ export async function getBlogRoutes() {
     throw new Error('An error occurred while fetching blog routes');
   }
 }
+
+export async function getCategoryRoutes() {
+  try {
+    return await db.post.findMany({
+      select: {
+        categories: { select: { slug: true } },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw new Error(
+      'An error occurred while fetching category routes'
+    );
+  }
+}
