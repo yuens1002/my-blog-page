@@ -89,8 +89,7 @@ export default async function Homepage() {
       <BlogSection
         posts={featuredPosts}
         title="Featured Posts"
-        fallbackText="No featured posts available. Mark a post featured first
-          then come back again"
+        fallbackText="No featured posts found. Mark a post featured first then come back again"
         className="pt-16 pb-12"
       >
         <Button asChild>
