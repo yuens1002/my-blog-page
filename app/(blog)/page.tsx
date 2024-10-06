@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { badgeVariants } from '@/components/ui/badge';
 import { Fragment } from 'react';
 import UnsplashPhotoComp from '@/components/UnsplashPhoto';
+import BlogSection from './_components/BlogSection';
+import InlineLink from '@/components/InlineLink';
 
 export default async function Homepage() {
   const latestPost = await getLatestPosts();
@@ -70,12 +72,11 @@ export default async function Homepage() {
               </div>
               <p className="first-letter:text-3xl md:basis-3/4 md:pl-8">
                 {post.excerpt} -{' '}
-                <Link
-                  className="font-semibold hover:underline"
+                <InlineLink
                   href={`${post.categories[0].slug}/${post.slug}`}
                 >
                   continue reading
-                </Link>
+                </InlineLink>
               </p>
             </div>
           </article>
@@ -85,59 +86,17 @@ export default async function Homepage() {
           No posts available. Add a post first then come back again
         </p>
       )}
-      <section>
-        <div className="flex justify-between items-center pt-16 pb-12">
-          <h2 className="text-2xl font-semibold">Featured Posts</h2>
-          <Button asChild>
-            <Link href="/featured">View All Featured Posts</Link>
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-x-8 lg:gap-x-16 gap-y-12 pt-8">
-          {featuredPosts ? (
-            featuredPosts.map((post, i) => (
-              <article key={post.id} className="flex flex-col">
-                <h3 className="text-xl font-bold pb-4">
-                  {post.title}
-                </h3>
-                {post.unsplashPhotoId ? (
-                  <UnsplashPhotoComp photoId={post.unsplashPhotoId} />
-                ) : null}
-
-                <div className="pt-2">
-                  <p className="text-sm">
-                    Author:{' '}
-                    <Link
-                      href={`/author/${post.author.id}`}
-                      className="font-semibold hover:underline"
-                    >{`${post.author.firstName} ${'&'} ${
-                      post.author.lastName
-                    }`}</Link>
-                  </p>
-                  <p className="text-sm">
-                    Published:{' '}
-                    {post.publishedAt &&
-                      new Date(post.publishedAt).toLocaleDateString()}
-                  </p>
-                  <p className="pt-2">
-                    {post.excerpt} -{' '}
-                    <Link
-                      className="font-semibold hover:underline"
-                      href={`${post.categories[0].slug}/${post.slug}`}
-                    >
-                      continue reading
-                    </Link>
-                  </p>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p>
-              No featured posts available. Mark a post featured first
-              then come back again
-            </p>
-          )}
-        </div>
-      </section>
+      <BlogSection
+        posts={featuredPosts}
+        title="Featured Posts"
+        fallbackText="No featured posts available. Mark a post featured first
+          then come back again"
+        className="pt-16 pb-12"
+      >
+        <Button asChild>
+          <Link href="/featured">View All Featured Posts</Link>
+        </Button>
+      </BlogSection>
     </section>
   );
 }
