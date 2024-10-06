@@ -38,7 +38,7 @@ export default function BlogSection({
         {children}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-x-8 lg:gap-x-16 gap-y-12 pt-8">
-        {posts ? (
+        {posts.length > 0 ? (
           posts.map((post, i) => (
             <article key={post.id} className="flex flex-col">
               <h3 className="text-xl font-bold pb-4">{post.title}</h3>

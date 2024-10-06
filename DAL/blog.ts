@@ -187,8 +187,6 @@ export async function getPostByCategory(
         'An unknown error occurred while blog posts of a category.'
       );
     }
-    throw new Error(
-      'An error occurred while fetching posts of a category'
-    );
+    return [];
   }
 }

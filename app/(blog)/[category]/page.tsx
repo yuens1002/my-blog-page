@@ -29,7 +29,6 @@ export default async function CategoryPage({
   params,
 }: CategoryPageProps) {
   const posts = await getPostByCategory(params.category);
-  if (!posts) notFound();
   return (
     <section className="container">
       <div className="text-sm pb-2 text-primary/50">
