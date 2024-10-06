@@ -51,3 +51,36 @@ export const createPhotoSchema = z.object({
 });
 
 export type UnsplashPhoto = z.infer<typeof createPhotoSchema>;
+
+const AuthorSchema = z.object({
+  firstName: z.string(),
+  lastName: z.string(),
+  id: z.string(),
+});
+
+const CategorySchema = z.object({
+  slug: z.string(),
+});
+
+export const FeaturedPostSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  excerpt: z.string(),
+  unsplashPhotoId: z.string().nullable(),
+  imageURL: z.string().nullable(),
+  slug: z.string(),
+  tags: z.array(z.string()),
+  stats: z
+    .object({
+      views: z.number(),
+      likes: z.number(),
+    })
+    .nullable()
+    .optional(),
+  publishedAt: z.date(),
+  author: AuthorSchema,
+  categories: z.array(CategorySchema),
+});
+
+export type FeaturedPostType = z.infer<typeof FeaturedPostSchema>;

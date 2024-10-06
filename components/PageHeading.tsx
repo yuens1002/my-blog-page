@@ -10,7 +10,10 @@ export default function PageHeading({
 }: PageHeadingProps) {
   return (
     <h1
-      className={cn('text-4xl font-bold tracking-tight', className)}
+      className={cn(
+        'text-4xl font-bold tracking-tight capitalize',
+        className
+      )}
     >
       {children}
     </h1>
