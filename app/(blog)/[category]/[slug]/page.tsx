@@ -1,12 +1,9 @@
 import BlogPost from '@/components/BlogPost';
 import { getBlogByUniqueProp, getBlogRoutes } from '@/DAL/blog';
 import { Category, Post } from '@prisma/client';
+import { notFound } from 'next/navigation';
 
-type PostPageProps = {
-  params: {
-    slug: string;
-  };
-};
+export const dynamicParams = false;
 
 type NextRouteKeys = {
   category: Category['slug'];
@@ -15,7 +12,8 @@ type NextRouteKeys = {
 
 export async function generateStaticParams() {
   const posts = await getBlogRoutes();
-
+  if (!posts)
+    return <p>Let&#39;s write a post and revisit this page...</p>;
   const postRoutes = posts.reduce((init, post) => {
     post.status === 'PUBLISHED' &&
       post.categories.forEach((category) => {
@@ -30,7 +28,14 @@ export async function generateStaticParams() {
   return postRoutes;
 }
 
-export default async function BlogPage({ params }: PostPageProps) {
+type BlogPageProps = {
+  params: {
+    slug: string;
+  };
+};
+
+export default async function BlogPage({ params }: BlogPageProps) {
   const post = await getBlogByUniqueProp({ slug: params.slug });
+  if (!post) notFound();
   return <BlogPost post={post} />;
 }

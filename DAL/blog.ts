@@ -2,6 +2,7 @@ import 'server-only';
 
 import db from '@/prisma/client';
 import { Post, Stats } from '@prisma/client';
+import { FeaturedPostSchema, FeaturedPostType } from '@/lib/types';
 
 export async function getLatestPosts() {
   try {
@@ -29,9 +30,11 @@ export async function getLatestPosts() {
   }
 }
 
-export async function getFeaturedPosts() {
+export async function getFeaturedPosts(): Promise<
+  FeaturedPostType[]
+> {
   try {
-    return await db.post.findMany({
+    const posts = await db.post.findMany({
       where: {
         featured: true,
       },
@@ -44,6 +47,9 @@ export async function getFeaturedPosts() {
         categories: true,
       },
     });
+
+    // Validate the posts with the schema
+    return FeaturedPostSchema.array().parse(posts);
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);
@@ -52,6 +58,7 @@ export async function getFeaturedPosts() {
         'An unknown error occurred while getting featured blog posts.'
       );
     }
+    return [];
   }
 }
 
@@ -98,8 +105,13 @@ export async function getBlogByUniqueProp(
       select: getPostSelections,
     });
   } catch (error) {
-    console.error(error);
-    throw new Error('An error occurred while fetching blog post');
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while getting a specific post.'
+      );
+    }
   }
 }
 
@@ -113,7 +125,68 @@ export async function getBlogRoutes() {
       },
     });
   } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while getting route to posts.'
+      );
+    }
+  }
+}
+
+export async function getCategoryRoutes() {
+  try {
+    return await db.post.findMany({
+      select: {
+        categories: { select: { slug: true } },
+      },
+    });
+  } catch (error) {
     console.error(error);
-    throw new Error('An error occurred while fetching blog routes');
+    throw new Error(
+      'An error occurred while fetching category routes'
+    );
+  }
+}
+
+export async function getPostByCategory(
+  category: string,
+  skip = 0,
+  take = 6
+): Promise<FeaturedPostType[]> {
+  try {
+    const posts = await db.post.findMany({
+      where: {
+        status: 'PUBLISHED',
+        AND: {
+          categories: {
+            some: {
+              slug: category,
+            },
+          },
+        },
+      },
+      orderBy: {
+        publishedAt: 'desc',
+      },
+      take,
+      skip,
+      include: {
+        categories: true,
+        author: true,
+      },
+    });
+    // Validate the posts with the schema
+    return FeaturedPostSchema.array().parse(posts);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while blog posts of a category.'
+      );
+    }
+    return [];
   }
 }
