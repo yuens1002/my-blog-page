@@ -184,7 +184,42 @@ export async function getPostByCategory(
       console.error(error);
     } else {
       console.error(
-        'An unknown error occurred while blog posts of a category.'
+        'An unknown error occurred while getting blog posts of a category.'
+      );
+    }
+    return [];
+  }
+}
+
+export async function getPostByAuthor(
+  authorId: string,
+  skip = 0,
+  take = 6
+): Promise<FeaturedPostType[]> {
+  try {
+    const posts = await db.post.findMany({
+      where: {
+        status: 'PUBLISHED',
+        authorId,
+      },
+      orderBy: {
+        publishedAt: 'desc',
+      },
+      take,
+      skip,
+      include: {
+        categories: true, // Include the categories of the post
+        author: true, // Include the author of the post
+      },
+    });
+    // Validate the posts with the schema
+    return FeaturedPostSchema.array().parse(posts);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error);
+    } else {
+      console.error(
+        'An unknown error occurred while getting blog posts of an author.'
       );
     }
     return [];
