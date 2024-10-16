@@ -63,7 +63,7 @@ export default function BlogSection({
                 <p className="pt-2">
                   {post.excerpt} -{' '}
                   <InlineLink
-                    href={`/${post.categories[0].slug}/${post.slug}`}
+                    href={`/category/${post.categories[0].slug}/${post.slug}`}
                   >
                     continue reading
                   </InlineLink>
