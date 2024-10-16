@@ -45,12 +45,9 @@ export default async function Homepage() {
               <div className="flex flex-col gap-2 md:basis-1/4 md:border-r md:border-r-primary/10 text-sm pr-8">
                 <p>
                   Author:{' '}
-                  <Link
-                    href={`/author/${post.author.id}`}
-                    className="font-semibold hover:underline"
-                  >{`${post.author.firstName} ${'&'} ${
-                    post.author.lastName
-                  }`}</Link>
+                  <InlineLink href={`/author/${post.author.id}`}>{`${
+                    post.author.firstName
+                  } ${'&'} ${post.author.lastName}`}</InlineLink>
                 </p>
                 <p>
                   Published:{' '}
@@ -73,7 +70,7 @@ export default async function Homepage() {
               <p className="first-letter:text-3xl md:basis-3/4 md:pl-8">
                 {post.excerpt} -{' '}
                 <InlineLink
-                  href={`${post.categories[0].slug}/${post.slug}`}
+                  href={`/category/${post.categories[0].slug}/${post.slug}`}
                 >
                   continue reading
                 </InlineLink>
