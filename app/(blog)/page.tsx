@@ -26,7 +26,7 @@ export default async function Homepage() {
               {post.categories.map((category) => (
                 <Fragment key={category.id}>
                   <Link
-                    href={`/${category.slug}`}
+                    href={`/category/${category.slug}`}
                     className={badgeVariants({ variant: 'default' })}
                   >
                     {category.label}
@@ -93,7 +93,9 @@ export default async function Homepage() {
         className="pt-16 pb-12"
       >
         <Button asChild>
-          <Link href="/featured">View All Featured Posts</Link>
+          <Link href="/category/featured">
+            View All Featured Posts
+          </Link>
         </Button>
       </BlogSection>
     </section>
