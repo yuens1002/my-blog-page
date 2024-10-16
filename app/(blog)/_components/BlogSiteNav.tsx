@@ -19,6 +19,14 @@ export default async function BlogSiteNav() {
   preloadCategories();
   const categories = await getCachedCategories();
   if (!categories) notFound();
+  const categoriesWithFeature = [
+    {
+      id: 'featured',
+      slug: 'featured',
+      label: 'Featured',
+    },
+    ...categories,
+  ];
   return (
     <>
       <LinkButton href="/">Home</LinkButton>
@@ -30,10 +38,13 @@ export default async function BlogSiteNav() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {categories.map(({ id, slug, label }) => (
+          {categoriesWithFeature.map(({ id, slug, label }) => (
             <Fragment key={id}>
               <DropdownMenuItem asChild>
-                <Link href={`/${slug}`} className="capitalize">
+                <Link
+                  href={`/category/${slug}`}
+                  className="capitalize"
+                >
                   {label}
                 </Link>
               </DropdownMenuItem>

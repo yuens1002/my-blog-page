@@ -9,6 +9,7 @@ export default async function AuthorBlogPage({
   params: { authorId: string };
 }) {
   const posts = await getPostByAuthor(authorId);
+  if (!posts) notFound();
   const author = await getAuthorById(authorId);
   if (!author) notFound();
   const authorName = `${author.firstName} ${author.lastName}`;
