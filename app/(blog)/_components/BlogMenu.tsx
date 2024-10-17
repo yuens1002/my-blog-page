@@ -35,8 +35,9 @@ export default async function BlogMenu() {
       },
       label: 'categories',
       subNav: [
+        { href: '/category/featured', label: 'Featured' },
         ...categories.map(({ slug, label }) => ({
-          href: `/${slug}`,
+          href: `/category/${slug}`,
           label,
         })),
       ],
