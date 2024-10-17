@@ -4,9 +4,11 @@
 - checkout the main branch build here
   - https://nextblog-yuens1002s-projects.vercel.app
 - showcase posts on blog pages
-  - [x] blog page
+  - [x] fully responsive & server site generated public blog pages
   - [x] by category
   - [x] by author
+  - [x] author sign in
+  - [ ] contact page
   - [ ] by tag
   - [ ] filter
   - [ ] pagination
@@ -20,4 +22,4 @@
   - [x] Connect to unsplash API for images
   - [ ] upload images on the server
 - [x] connect to a postgreSQL database
-- [ ] npm package & version control
+- [ ] separate platform build from instance
