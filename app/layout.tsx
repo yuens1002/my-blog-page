@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import ModeToggle from '@/components/ModeToggle';
 import { cookies } from 'next/headers';
 import dynamic from 'next/dynamic';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -43,7 +44,6 @@ export default async function RootLayout({
       >
         <div className="flex flex-col min-h-full">
           {children}
-
           <footer className="flex items-center justify-center gap-x-4 text-xs py-4 mt-auto bg-slate-100 dark:bg-slate-900">
             <p>
               &copy; 2024 {'<'}your
@@ -59,6 +59,7 @@ export default async function RootLayout({
             </AppThemeProvider>
           </footer>
         </div>
+        <Toaster />
       </body>
     </html>
   );

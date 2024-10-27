@@ -18,9 +18,7 @@ export default function MenuNav({
 }: MenuNavProps) {
   const pathname = usePathname();
   return (
-    <ul
-      className={cn('flex flex-col text-lg text-primary', className)}
-    >
+    <ul className={cn('flex flex-col text-primary', className)}>
       {items.map(({ icon, href, label, subNav }) => (
         <Fragment key={label}>
           {href && pathname !== href ? (
